@@ -62,6 +62,7 @@ class CloudMusic:
     def __init__(self):
         self.loginUrl = "https://music.163.com/weapi/login/cellphone"
         self.signUrl = "https://music.163.com/weapi/point/dailyTask"
+        self.taskUrl = "https://music.163.com/weapi/v1/discovery/recommend/resource"
         self.session = requests.Session()
         self.enc = Encrypt()
         self.headers = {
@@ -80,8 +81,8 @@ class CloudMusic:
                 'rememberLogin': 'true'
             }))
         headers = {
-            'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
+            "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36",
             "Referer":
             "http://music.163.com/",
             "Accept-Encoding":
@@ -92,6 +93,7 @@ class CloudMusic:
         res = self.session.post(url=self.loginUrl,
                                 data=loginData,
                                 headers=headers)
+        self.cookie = res.cookies
         ret = json.loads(res.text)
         if ret['code'] == 200:
             print("登录成功")
@@ -110,8 +112,65 @@ class CloudMusic:
         else:
             print("签到失败" + str(ret['code']) + "：" + ret['message'])
 
+    def task(self):
+        csrf = requests.utils.dict_from_cookiejar(self.cookie)['__csrf']
+        url = "https://music.163.com/weapi/v6/playlist/detail?csrf_token=" + csrf
+        res = self.session.post(url=self.taskUrl,
+                                data=self.enc.encrypt('{"csrf_token":"' +
+                                                      csrf + '"}'),
+                                headers=self.headers)
+        ret = json.loads(res.text)
+        if ret['code'] != 200:
+            print("获取推荐歌曲失败")
+        else:
+            lists = ret['recommend']
+        musicId = []
+        for m in lists:
+            print(m['id'])
+            res = self.session.post(url=url,
+                                    data=self.enc.encrypt(
+                                        json.dumps({
+                                            'id': m['id'],
+                                            'n': 1000,
+                                            'csrf_token': csrf
+                                        })),
+                                    headers=self.headers)
+            ret = json.loads(res.text)
+            for i in ret['playlist']['trackIds']:
+                musicId.append(i['id'])
+        postData = json.dumps({
+            'logs':
+            json.dumps(
+                list(
+                    map(
+                        lambda x: {
+                            'action': 'play',
+                            'json': {
+                                'download': 0,
+                                'end': 'playend',
+                                'id': x,
+                                'sourceId': '',
+                                'time': 240,
+                                'type': 'song',
+                                'wifi': 0
+                            }
+                        }, musicId)))
+        })
+        res = self.session.post(
+            url="http://music.163.com/weapi/feedback/weblog",
+            data=self.enc.encrypt(postData))
+        ret = json.loads(res.text)
+        if ret['code'] == 200:
+            print("刷单成功！共" + str(len(musicId)) + "首")
+            exit()
+        else:
+            print("发生错误：" + str(ret['code']) + ret['message'])
+            exit(ret['code'])
+
 
 if __name__ == "__main__":
+    # 自定义歌单
+    # customMusicList = ""
     app = CloudMusic()
     # pylint: disable=unbalanced-tuple-unpacking
     phone, passowrd = sys.argv[1:3]
@@ -119,3 +178,5 @@ if __name__ == "__main__":
     app.login(phone, passowrd)
     # Sign In
     app.sign()
+    # Music Task
+    app.task()
