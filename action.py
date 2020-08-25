@@ -98,7 +98,7 @@ class CloudMusic:
         if ret['code'] == 200:
             print("登录成功")
         else:
-            print("登录失败" + str(ret['code']) + "：" + ret['message'])
+            print("登录失败 " + str(ret['code']) + "：" + ret['message'])
 
     def sign(self):
         res = self.session.post(url=self.signUrl,
@@ -110,7 +110,7 @@ class CloudMusic:
         elif ret['code'] == -2:
             print("重复签到")
         else:
-            print("签到失败" + str(ret['code']) + "：" + ret['message'])
+            print("签到失败 " + str(ret['code']) + "：" + ret['message'])
 
     def task(self, custom):
         csrf = requests.utils.dict_from_cookiejar(self.cookie)['__csrf']
@@ -121,7 +121,7 @@ class CloudMusic:
                                 headers=self.headers)
         ret = json.loads(res.text)
         if ret['code'] != 200:
-            print("获取推荐歌曲失败")
+            print("获取推荐歌曲失败 " + str(ret['code']) + "：" + ret['message'])
         else:
             lists = ret['recommend']
         musicId = []
@@ -163,20 +163,21 @@ class CloudMusic:
             data=self.enc.encrypt(postData))
         ret = json.loads(res.text)
         if ret['code'] == 200:
-            print("刷歌成功！共" + str(len(musicId[:500])) + "首")
+            print("刷听歌量成功，共" + str(len(musicId[:500])) + "首")
             exit()
         else:
-            print("发生错误：" + str(ret['code']) + ret['message'])
+            print("刷听歌量失败 " + str(ret['code']) + "：" + ret['message'])
             exit(ret['code'])
 
 
 if __name__ == "__main__":
-    # 自定义歌单
-    customMusicList = [5173689994]
+    # Custom Music List
+    customMusicList = []
     # Start
     app = CloudMusic()
     # pylint: disable=unbalanced-tuple-unpacking
     phone, passowrd = sys.argv[1:3]
+    customMusicList.append(sys.argv[4])
     # Login
     app.login(phone, passowrd)
     # Sign In
