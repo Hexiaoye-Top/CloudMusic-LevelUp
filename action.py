@@ -51,23 +51,28 @@ class Encrypt:
         hl.update(str.encode(encoding='utf-8'))
         return hl.hexdigest()
 
+    def encrypt(self, text):
+        secKey = self.createSecretKey(16)
+        encText = self.aesEncrypt(self.aesEncrypt(text, self.nonce), secKey)
+        encSecKey = self.rsaEncrypt(secKey, self.pubKey, self.modulus)
+        return {'params': encText, 'encSecKey': encSecKey}
+
 
 class CloudMusic:
     def __init__(self):
         self.loginUrl = "https://music.163.com/weapi/login/cellphone"
+        self.signUrl = "https://music.163.com/weapi/point/dailyTask"
         self.session = requests.Session()
         self.enc = Encrypt()
-
-    def encrypt(self, text):
-        secKey = self.enc.createSecretKey(16)
-        encText = self.enc.aesEncrypt(
-            self.enc.aesEncrypt(text, self.enc.nonce), secKey)
-        encSecKey = self.enc.rsaEncrypt(secKey, self.enc.pubKey,
-                                        self.enc.modulus)
-        return {'params': encText, 'encSecKey': encSecKey}
+        self.headers = {
+            "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36",
+            "Referer": "http://music.163.com/",
+            "Accept-Encoding": "gzip, deflate",
+        }
 
     def login(self, phone, password):
-        loginData = self.encrypt(
+        loginData = self.enc.encrypt(
             json.dumps({
                 'phone': phone,
                 'countrycode': '86',
@@ -89,13 +94,28 @@ class CloudMusic:
                                 headers=headers)
         ret = json.loads(res.text)
         if ret['code'] == 200:
-            print("登录成功！")
+            print("登录成功")
         else:
-            print("登录失败！")
-        print(ret)
+            print("登录失败" + str(ret['code']) + "：" + ret['message'])
+
+    def sign(self):
+        res = self.session.post(url=self.signUrl,
+                                data=self.enc.encrypt('{"type":0}'),
+                                headers=self.headers)
+        ret = json.loads(res.text)
+        if ret['code'] == 200:
+            print("签到成功，经验+" + str(ret['point']))
+        elif ret['code'] == -2:
+            print("重复签到")
+        else:
+            print("签到失败" + str(ret['code']) + "：" + ret['message'])
 
 
 if __name__ == "__main__":
     app = CloudMusic()
+    # pylint: disable=unbalanced-tuple-unpacking
     phone, passowrd = sys.argv[1:3]
+    # Login
     app.login(phone, passowrd)
+    # Sign In
+    app.sign()
