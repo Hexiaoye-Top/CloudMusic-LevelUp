@@ -45,12 +45,6 @@ class Encrypt:
             modulus, 16)
         return format(rs, 'x').zfill(256)
 
-    # md5 Compute
-    def md5(self, str):
-        hl = hashlib.md5()
-        hl.update(str.encode(encoding='utf-8'))
-        return hl.hexdigest()
-
     def encrypt(self, text):
         secKey = self.createSecretKey(16)
         encText = self.aesEncrypt(self.aesEncrypt(text, self.nonce), secKey)
@@ -77,7 +71,7 @@ class CloudMusic:
             json.dumps({
                 'phone': phone,
                 'countrycode': '86',
-                'password': self.enc.md5(password),
+                'password': password,
                 'rememberLogin': 'true'
             }))
         headers = {
@@ -125,9 +119,7 @@ class CloudMusic:
         else:
             lists = ret['recommend']
         musicId = []
-        musicLists = [(d['id']) for d in lists]
-        musicLists += custom
-
+        musicLists = [(d['id']) for d in lists] + custom
         for m in musicLists:
             res = self.session.post(url=url,
                                     data=self.enc.encrypt(
@@ -177,7 +169,7 @@ if __name__ == "__main__":
     app = CloudMusic()
     # pylint: disable=unbalanced-tuple-unpacking
     phone, passowrd = sys.argv[1:3]
-    customMusicList.append(sys.argv[4])
+    customMusicList += sys.argv[4:]
     # Login
     app.login(phone, passowrd)
     # Sign In
