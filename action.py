@@ -93,6 +93,7 @@ class CloudMusic:
             print("登录成功")
         else:
             print("登录失败 " + str(ret['code']) + "：" + ret['message'])
+            exit()
 
     def sign(self):
         res = self.session.post(url=self.signUrl,
