@@ -112,7 +112,7 @@ class CloudMusic:
         else:
             print("签到失败" + str(ret['code']) + "：" + ret['message'])
 
-    def task(self):
+    def task(self, custom):
         csrf = requests.utils.dict_from_cookiejar(self.cookie)['__csrf']
         url = "https://music.163.com/weapi/v6/playlist/detail?csrf_token=" + csrf
         res = self.session.post(url=self.taskUrl,
@@ -125,12 +125,14 @@ class CloudMusic:
         else:
             lists = ret['recommend']
         musicId = []
-        for m in lists:
-            print(m['id'])
+        musicLists = [(d['id']) for d in lists]
+        musicLists += custom
+
+        for m in musicLists:
             res = self.session.post(url=url,
                                     data=self.enc.encrypt(
                                         json.dumps({
-                                            'id': m['id'],
+                                            'id': m,
                                             'n': 1000,
                                             'csrf_token': csrf
                                         })),
@@ -154,14 +156,14 @@ class CloudMusic:
                                 'type': 'song',
                                 'wifi': 0
                             }
-                        }, musicId)))
+                        }, musicId[:500])))
         })
         res = self.session.post(
             url="http://music.163.com/weapi/feedback/weblog",
             data=self.enc.encrypt(postData))
         ret = json.loads(res.text)
         if ret['code'] == 200:
-            print("刷单成功！共" + str(len(musicId)) + "首")
+            print("刷歌成功！共" + str(len(musicId[:500])) + "首")
             exit()
         else:
             print("发生错误：" + str(ret['code']) + ret['message'])
@@ -170,7 +172,8 @@ class CloudMusic:
 
 if __name__ == "__main__":
     # 自定义歌单
-    # customMusicList = ""
+    customMusicList = [5173689994]
+    # Start
     app = CloudMusic()
     # pylint: disable=unbalanced-tuple-unpacking
     phone, passowrd = sys.argv[1:3]
@@ -179,4 +182,4 @@ if __name__ == "__main__":
     # Sign In
     app.sign()
     # Music Task
-    app.task()
+    app.task(customMusicList)
