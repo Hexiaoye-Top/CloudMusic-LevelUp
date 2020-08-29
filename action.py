@@ -166,7 +166,7 @@ class CloudMusic:
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("python action.py 手机号 密码md5 歌单1 歌单2 歌单3")
+        print("python3 action.py 手机号 密码md5 歌单1 歌单2 歌单3")
         exit()
     # Custom Music List
     customMusicList = []
