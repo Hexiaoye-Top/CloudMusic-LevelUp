@@ -87,10 +87,11 @@ class CloudMusic:
         res = self.session.post(url=self.loginUrl,
                                 data=loginData,
                                 headers=headers)
-        self.cookie = res.cookies
         ret = json.loads(res.text)
         if ret['code'] == 200:
-            print("登录成功")
+            self.cookie = res.cookies
+            self.nickname = ret["profile"]["nickname"]
+            print("\"{nickname}\" 登录成功".format(nickname=self.nickname))
         else:
             print("登录失败 " + str(ret['code']) + "：" + ret['message'])
             exit()
@@ -103,7 +104,7 @@ class CloudMusic:
         if ret['code'] == 200:
             print("签到成功，经验+" + str(ret['point']))
         elif ret['code'] == -2:
-            print("重复签到")
+            print("今天已经签到过了")
         else:
             print("签到失败 " + str(ret['code']) + "：" + ret['message'])
 
@@ -164,6 +165,9 @@ class CloudMusic:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("python action.py 手机号 密码md5 歌单1 歌单2 歌单3")
+        exit()
     # Custom Music List
     customMusicList = []
     # Start
