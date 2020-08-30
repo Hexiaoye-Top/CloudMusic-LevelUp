@@ -177,7 +177,6 @@ class CloudMusic:
             afterCount = self.getLevel()["nowPlayCount"]
             print("刷听歌量成功，共{count}首".format(count=afterCount -
                                             self.beforeCount))
-            exit()
         else:
             print("刷听歌量失败 " + str(ret['code']) + "：" + ret['message'])
             exit(ret['code'])
@@ -202,6 +201,7 @@ if __name__ == "__main__":
         app.sign()
         # Music Task
         app.task(customMusicList)
-        print("=============================")
     except KeyboardInterrupt:
+        print("=============================")
         exit()
+    print("=============================")
