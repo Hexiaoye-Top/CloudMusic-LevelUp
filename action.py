@@ -109,6 +109,15 @@ class CloudMusic:
         ret = json.loads(res.text)
         return ret["data"]
 
+    # def refresh(self):
+    #     url = "https://music.163.com/weapi/login/token/refresh?csrf_token=" + self.csrf
+    #     res = self.session.post(url=url,
+    #                             data=self.loginData,
+    #                             headers=self.headers)
+    #     ret = json.loads(res.text)
+    #     print(ret)
+    #     return ret["code"]
+
     def sign(self):
         signUrl = "https://music.163.com/weapi/point/dailyTask"
         res = self.session.post(url=signUrl,
@@ -151,6 +160,7 @@ class CloudMusic:
             ret = json.loads(res.text)
             for i in ret['playlist']['trackIds']:
                 musicId.append(i['id'])
+        print("歌单大小：{musicCount}首".format(musicCount=len(musicId)))
         postData = json.dumps({
             'logs':
             json.dumps(
@@ -163,20 +173,18 @@ class CloudMusic:
                                 'end': 'playend',
                                 'id': x,
                                 'sourceId': '',
-                                'time': 300,
+                                'time': 240,
                                 'type': 'song',
                                 'wifi': 0
                             }
-                        }, musicId[:340])))
+                        }, musicId[:400])))
         })
         res = self.session.post(
             url="http://music.163.com/weapi/feedback/weblog",
             data=self.enc.encrypt(postData))
         ret = json.loads(res.text)
         if ret['code'] == 200:
-            afterCount = self.getLevel()["nowPlayCount"]
-            print("刷听歌量成功，共{count}首".format(count=afterCount -
-                                            self.beforeCount))
+            print("刷听歌量成功")
         else:
             print("刷听歌量失败 " + str(ret['code']) + "：" + ret['message'])
             exit(ret['code'])
@@ -191,12 +199,12 @@ if __name__ == "__main__":
     # Start
     app = CloudMusic()
     # pylint: disable=unbalanced-tuple-unpacking
-    phone, passowrd = sys.argv[1:3]
+    phone, password = sys.argv[1:3]
     customMusicList += sys.argv[3:]
     print("=============================")
     try:
         # Login
-        app.login(phone, passowrd)
+        app.login(phone, password)
         # Sign In
         app.sign()
         # Music Task
