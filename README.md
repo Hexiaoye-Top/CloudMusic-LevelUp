@@ -77,7 +77,9 @@ python action.py 手机号 32位MD5密码加密值 5173689994 4901511925
 
 ### 4.手动执行
 
-这一步可以省略，给自己的仓库点一下star就可以手动执行一次GitHub Actions。
+GitHub现在有了手动执行的功能，点击下图Run workflow即可。
+
+![](README/image-20201022192517489.png)
 
 ## 注意事项
 
