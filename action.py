@@ -91,14 +91,14 @@ class CloudMusic:
             self.csrf = requests.utils.dict_from_cookiejar(
                 self.cookie)['__csrf']
             self.nickname = ret["profile"]["nickname"]
-            print("\"{nickname}\" 登录成功，当前等级：{level}".format(
-                nickname=self.nickname, level=self.getLevel()["level"]))
             self.beforeCount = self.getLevel()["nowPlayCount"]
-            print("距离升级还需听{beforeCount}首歌".format(
-                beforeCount=self.getLevel()["nextPlayCount"] -
-                self.getLevel()["nowPlayCount"]))
+            return ("\"{nickname}\" 登录成功，当前等级：{level}\n\n".format(
+                nickname=self.nickname, level=self.getLevel()["level"]) +
+                    "距离升级还需听{beforeCount}首歌".format(
+                        beforeCount=self.getLevel()["nextPlayCount"] -
+                        self.getLevel()["nowPlayCount"]))
         else:
-            print("登录失败 " + str(ret['code']) + "：" + ret['message'])
+            return ("登录失败 " + str(ret['code']) + "：" + ret['message'])
             exit()
 
     def getLevel(self):
@@ -125,11 +125,11 @@ class CloudMusic:
                                 headers=self.headers)
         ret = json.loads(res.text)
         if ret['code'] == 200:
-            print("签到成功，经验+" + str(ret['point']))
+            return ("签到成功，经验+" + str(ret['point']))
         elif ret['code'] == -2:
-            print("今天已经签到过了")
+            return ("今天已经签到过了")
         else:
-            print("签到失败 " + str(ret['code']) + "：" + ret['message'])
+            return ("签到失败 " + str(ret['code']) + "：" + ret['message'])
 
     def task(self, custom):
         url = "https://music.163.com/weapi/v6/playlist/detail?csrf_token=" + self.csrf
@@ -160,7 +160,7 @@ class CloudMusic:
             ret = json.loads(res.text)
             for i in ret['playlist']['trackIds']:
                 musicId.append(i['id'])
-        print("歌单大小：{musicCount}首".format(musicCount=len(musicId)))
+        # print("歌单大小：{musicCount}首\n".format(musicCount=len(musicId)))
         postData = json.dumps({
             'logs':
             json.dumps(
@@ -184,31 +184,54 @@ class CloudMusic:
             data=self.enc.encrypt(postData))
         ret = json.loads(res.text)
         if ret['code'] == 200:
-            print("刷听歌量成功")
+            return ("刷听歌量成功")
         else:
-            print("刷听歌量失败 " + str(ret['code']) + "：" + ret['message'])
+            return ("刷听歌量失败 " + str(ret['code']) + "：" + ret['message'])
             exit(ret['code'])
+
+    def server_chan(self, sckey, text):
+        url = 'https://sc.ftqq.com/%s.send?' % sckey + 'text=网易云打卡&desp=%s' % text
+        ret = requests.get(url)
+        print(ret.text)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("python3 action.py 手机号 密码MD5值32位 歌单1 歌单2 歌单3")
+    args = sys.argv
+    schan = False
+    if len(args) < 3:
+        print("python3 action.py 手机号 密码MD5值32位 歌单1 歌单2 歌单3\n")
+        print("使用 -s SCKEY 指定Server酱SCKEY")
         exit()
     # Custom Music List
     customMusicList = []
     # Start
     app = CloudMusic()
     # pylint: disable=unbalanced-tuple-unpacking
-    phone, password = sys.argv[1:3]
-    customMusicList += sys.argv[3:]
+    if "-s" in args:
+        i = args.index("-s")
+        if i == len(args) - 1 or len(args[i + 1]) < 40:
+            del args[i]
+        else:
+            del args[i:i + 2]
+            schan = True
+
+    phone, password = args[1:3]
+    customMusicList += args[3:]
     print("=============================")
     try:
         # Login
-        app.login(phone, password)
+        res_login = app.login(phone, password)
         # Sign In
-        app.sign()
+        res_sign = app.sign()
         # Music Task
-        app.task(customMusicList)
+        res_task = app.task(customMusicList)
+
+        res = res_login + "\n\n" + res_sign + "\n\n" + res_task
+        if schan == True:
+            # 调用Server酱
+            app.server_chan(sckey, res)
+        else:
+            print(res)
     except KeyboardInterrupt:
         print("=============================")
         exit()

@@ -45,17 +45,47 @@ python action.py 手机号 32位MD5密码加密值
 python action.py 手机号 32位MD5密码加密值 5173689994 4901511925
 ```
 
+### Server酱微信推送
+
+![](README/image-20201110001457321.png)
+
+Server酱可以绑定微信，将脚本每次的运行结果推送到你的微信上。
+
+使用方法：
+
+1. 访问[Server酱官网](http://sc.ftqq.com/3.version)，点击**登入**，关联GitHub账号
+
+	![](README/image-20201110001821697.png)
+
+	![](README/image-20201110001905904.png)
+
+2. 登入成功后，点击**微信推送**按照网站上的步骤关注公众号，并验证
+
+3. 点击**发送消息**，找到自己的调用代码，并复制
+
+	![](README/image-20201110002226781.png)
+
+4. 执行脚本时带参数`-s`指定调用代码
+
+	用例：
+
+	```shell
+	python action.py 手机号 32位MD5密码加密值 -s 调用代码
+	```
+
 ## GitHub Actions 部署
 
 ### 1. Fork 该仓库
 
 ### 2. 创建 Secrets
 
-创建 PHONE，填入手机号
+- 创建 PHONE，填入手机号（必填）
 
-创建 PASSWORD，填入 32 位 MD5 密码加密值
+- 创建 PASSWORD，填入 32 位 MD5 密码加密值（必填）
 
-![](README/image-20200829120257532.png)
+- 创建 SCKEY（Server酱调用代码，可选）
+
+![](README/image-20201110002853759.png)
 
 ### 3. 启用 Action
 
