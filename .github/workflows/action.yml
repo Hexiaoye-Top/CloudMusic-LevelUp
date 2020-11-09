@@ -30,6 +30,6 @@ jobs:
         env:
           PHONE: ${{ secrets.PHONE }}
           PASSWORD: ${{ secrets.PASSWORD }}
-          SCKEY: ${{secrets.SCKEY}}
+          SCKEY: ${{ secrets.SCKEY }}
         run: |
           python3 action.py ${PHONE} ${PASSWORD} -s ${SCKEY}
