@@ -212,6 +212,7 @@ if __name__ == "__main__":
         if i == len(args) - 1 or len(args[i + 1]) < 40:
             del args[i]
         else:
+            sckey = args[i + 1]
             del args[i:i + 2]
             schan = True
 
