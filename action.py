@@ -190,7 +190,7 @@ class CloudMusic:
             exit(ret['code'])
 
     def server_chan(self, sckey, text):
-        url = 'https://sc.ftqq.com/%s.send?' % sckey + 'text=网易云打卡&desp=%s' % text
+        url = 'https://sc.ftqq.com/%s.send?' % sckey + 'text=网易云打卡脚本&desp=%s' % text
         ret = requests.get(url)
         print(ret.text)
 
