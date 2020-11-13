@@ -5,7 +5,7 @@
 @DSEC    :   网易云音乐签到刷歌脚本
 @AUTHOR  :   Secriy
 @DATE    :   2020/08/25
-@VERSION :   2.0
+@VERSION :   2.1
 '''
 
 import os
@@ -16,6 +16,7 @@ import json
 import hashlib
 import binascii
 import codecs
+import argparse
 from Crypto.Cipher import AES
 
 
@@ -92,11 +93,13 @@ class CloudMusic:
                 self.cookie)['__csrf']
             self.nickname = ret["profile"]["nickname"]
             self.beforeCount = self.getLevel()["nowPlayCount"]
-            return ("\"{nickname}\" 登录成功，当前等级：{level}\n\n".format(
-                nickname=self.nickname, level=self.getLevel()["level"]) +
-                    "距离升级还需听{beforeCount}首歌".format(
-                        beforeCount=self.getLevel()["nextPlayCount"] -
-                        self.getLevel()["nowPlayCount"]))
+
+            retext = "\"{nickname}\" 登录成功，当前等级：{level}\n\n".format(
+                nickname=self.nickname, level=self.getLevel()
+                ["level"]) + "距离升级还需听{beforeCount}首歌".format(
+                    beforeCount=self.getLevel()["nextPlayCount"] -
+                    self.getLevel()["nowPlayCount"])
+            return retext
         else:
             return ("登录失败 " + str(ret['code']) + "：" + ret['message'])
             exit()
@@ -134,7 +137,7 @@ class CloudMusic:
     def task(self, custom):
         url = "https://music.163.com/weapi/v6/playlist/detail?csrf_token=" + self.csrf
         recommendUrl = "https://music.163.com/weapi/v1/discovery/recommend/resource"
-        if len(custom) == 0:
+        if not custom:
             res = self.session.post(url=recommendUrl,
                                     data=self.enc.encrypt('{"csrf_token":"' +
                                                           self.csrf + '"}'),
@@ -177,7 +180,7 @@ class CloudMusic:
                                 'type': 'song',
                                 'wifi': 0
                             }
-                        }, musicId[:400])))
+                        }, musicId[:500])))
         })
         res = self.session.post(
             url="http://music.163.com/weapi/feedback/weblog",
@@ -195,45 +198,43 @@ class CloudMusic:
         print(ret.text)
 
 
+def getArgs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("phone", help="your Phone Number")
+    parser.add_argument("password", help="MD5 value of the password")
+    parser.add_argument("-s", dest="SCKEY", help="SCKEY of the Server Chan")
+    parser.add_argument("-l", dest="PLAYLIST", nargs='*', help="your playlist")
+    args = parser.parse_args()
+
+    return {
+        'phone': args.phone,
+        'password': args.password,
+        'sckey': args.SCKEY,
+        'playlist': args.PLAYLIST
+    }
+
+
 if __name__ == "__main__":
-    args = sys.argv
-    schan = False
-    if len(args) < 3:
-        print("python3 action.py 手机号 密码MD5值32位 歌单1 歌单2 歌单3\n")
-        print("使用 -s SCKEY 指定Server酱SCKEY")
-        exit()
-    # Custom Music List
-    customMusicList = []
+    # Get Args
+    info = getArgs()
     # Start
     app = CloudMusic()
-    # pylint: disable=unbalanced-tuple-unpacking
-    if "-s" in args:
-        i = args.index("-s")
-        if i == len(args) - 1 or len(args[i + 1]) < 40:
-            del args[i]
-        else:
-            sckey = args[i + 1]
-            del args[i:i + 2]
-            schan = True
-
-    phone, password = args[1:3]
-    customMusicList += args[3:]
-    print("=============================")
+    print(30 * "=")
     try:
         # Login
-        res_login = app.login(phone, password)
+        res_login = app.login(info['phone'], info['password'])
         # Sign In
         res_sign = app.sign()
         # Music Task
-        res_task = app.task(customMusicList)
-
+        res_task = app.task(info['playlist'])
+        # Print Response
         res = res_login + "\n\n" + res_sign + "\n\n" + res_task
-        if schan == True:
+        if info['sckey']:
             # 调用Server酱
-            app.server_chan(sckey, res)
+            app.server_chan(info['sckey'], res)
         else:
             print(res)
     except KeyboardInterrupt:
-        print("=============================")
+        print(30 * "=")
         exit()
-    print("=============================")
+    print(30 * "=")
