@@ -17,6 +17,7 @@ import hashlib
 import binascii
 import codecs
 import argparse
+import random
 from Crypto.Cipher import AES
 
 
@@ -180,7 +181,7 @@ class CloudMusic:
                                 'type': 'song',
                                 'wifi': 0
                             }
-                        }, musicId[:500])))
+                        }, random.sample(musicId, 420))))
         })
         res = self.session.post(
             url="http://music.163.com/weapi/feedback/weblog",
@@ -232,8 +233,7 @@ if __name__ == "__main__":
         if info['sckey']:
             # 调用Server酱
             app.server_chan(info['sckey'], res)
-        else:
-            print(res)
+        print(res)
     except KeyboardInterrupt:
         print(30 * "=")
         exit()
