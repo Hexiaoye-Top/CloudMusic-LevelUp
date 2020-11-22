@@ -181,7 +181,10 @@ class CloudMusic:
                                 'type': 'song',
                                 'wifi': 0
                             }
-                        }, random.sample(musicId, 420))))
+                        },
+                        random.sample(
+                            musicId,
+                            420 if len(musicId) > 420 else len(musicId)))))
         })
         res = self.session.post(
             url="http://music.163.com/weapi/feedback/weblog",
