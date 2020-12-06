@@ -206,7 +206,10 @@ def getArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument("phone", help="your Phone Number")
     parser.add_argument("password", help="MD5 value of the password")
-    parser.add_argument("-s", dest="SCKEY", help="SCKEY of the Server Chan")
+    parser.add_argument("-s",
+                        dest="SCKEY",
+                        nargs='*',
+                        help="SCKEY of the Server Chan")
     parser.add_argument("-l", dest="PLAYLIST", nargs='*', help="your playlist")
     args = parser.parse_args()
 
