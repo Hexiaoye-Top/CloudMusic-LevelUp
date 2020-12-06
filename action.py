@@ -238,7 +238,7 @@ if __name__ == "__main__":
         res = res_login + "\n\n" + res_sign + "\n\n" + res_task
         if info['sckey']:
             # 调用Server酱
-            app.server_chan(info['sckey'], res)
+            app.server_chan(info['sckey'][0], res)
         print(res)
     except KeyboardInterrupt:
         print(30 * "=")
