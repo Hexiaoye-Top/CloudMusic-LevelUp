@@ -6,10 +6,6 @@ name: 网易云飞升
 on:
   schedule:
     - cron: "0 16 * * *"
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -30,6 +26,10 @@ jobs:
         env:
           PHONE: ${{ secrets.PHONE }}
           PASSWORD: ${{ secrets.PASSWORD }}
+          NOMD5_PASSWORD: ${{ secrets.NOMD5_PASSWORD }}
+          PALYLIST: ${{ secrets.PALYLIST }}
           SCKEY: ${{ secrets.SCKEY }}
         run: |
-          python3 action.py ${PHONE} ${PASSWORD} -s ${SCKEY}
+          if [ ${NOMD5_PASSWORD} ];then PASSWORD=$(echo -n "${NOMD5_PASSWORD}"|md5sum|cut -d " " -f1); fi
+          if [ ${PLAYLIST} ];then PLAYLIST_CMD="-l $PLAYLIST"; fi
+          python3 action.py ${PHONE} ${PASSWORD} -s ${SCKEY} ${PLAYLIST_CMD}
