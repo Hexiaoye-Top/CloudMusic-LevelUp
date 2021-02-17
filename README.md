@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 ### 执行脚本
 
-脚本使用命令行参数输入变量，其中手机号和密码的32位MD5值为必填字段，其余均为可选字段。
+脚本使用命令行参数输入变量，其中手机号和密码的 32 位 MD5 值为必填字段，其余均为可选字段。
 
 ```shell
 # python action.py -h 查看usage
@@ -37,14 +37,6 @@ optional arguments:
   -l [PLAYLIST [PLAYLIST ...]]
                         your playlist
 ```
-
-示例：
-
-```shell
-python action.py 10000000000 4******************************1 -s SSS111111T111112f3e42e111172a041111a11130451115b5111d11 -l 2133132 2311315 2434234
-```
-
-![](README/image-20201113151600263.png)
 
 密码的 MD5 值计算可以在[MD5 在线加密](https://md5jiami.51240.com/)上进行，取 32 位小写值
 
@@ -65,33 +57,33 @@ python action.py 10000000000 4******************************1 -s SSS111111T11111
 python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
 ```
 
-### Server 酱微信推送
+### Server 酱 Turbo 版微信推送
 
-![](README/image-20201110001457321.png)
-
-Server 酱可以绑定微信，将脚本每次的运行结果推送到你的微信上。
+使用 Server 酱 Turbo 版可以绑定微信，将脚本每次的运行结果推送到你的微信上。
 
 使用方法：
 
-1. 访问[Server 酱官网](http://sc.ftqq.com/3.version)，点击**登入**，关联 GitHub 账号
+1. 访问[Server 酱 Turbo 版官网](https://sct.ftqq.com/)，点击**登入**，使用微信扫码登录
 
-   ![](README/image-20201110001821697.png)
+2. 登入成功后，按照网站上的说明选择消息通道，如**方糖服务号**（于 2021 年 4 月停止服务）
 
-   ![](README/image-20201110001905904.png)
+3. 点击**SendKey**，找到自己的 SendKey，并复制
 
-2. 登入成功后，点击**微信推送**按照网站上的步骤关注公众号，并验证
-
-3. 点击**发送消息**，找到自己的调用代码，并复制
-
-   ![](README/image-20201110002226781.png)
-
-4. 执行脚本时带参数`-s`指定调用代码
+4. 执行脚本时带参数`-s`指定 SendKey
 
    用例：
 
    ```shell
-   python action.py 手机号 32位MD5密码加密值 -s 调用代码
+   python action.py 手机号 32位MD5密码加密值 -s [SendKey]
    ```
+
+   示例：
+
+   ```shell
+   python action.py 10000000000 4******************************1 -s SSS111111T111112f3e421 -l 2133132 2311315 2434234
+   ```
+
+   ![](README/image-20201113151600263.png)
 
 ## GitHub Actions 部署
 
@@ -101,13 +93,13 @@ Server 酱可以绑定微信，将脚本每次的运行结果推送到你的微�
 
 - 创建 PHONE，填入手机号（必填）
 
-- 创建 PASSWORD，填入 32 位 MD5 密码加密值，填写此项可不填 NOMD5_PASSWORD 项（与NOMD5_PASSWORD二选其一）
+- 创建 PASSWORD，填入 32 位 MD5 密码加密值，填写此项可不填 NOMD5_PASSWORD 项（与 NOMD5_PASSWORD 二选其一）
 
-- 创建 NOMD5_PASSWORD，填入密码，会自动转换密码为MD5值，填写此项可不填 PASSWORD 项（与PASSWORD二选其一）
+- 创建 NOMD5_PASSWORD，填入密码，会自动转换密码为 MD5 值，填写此项可不填 PASSWORD 项（与 PASSWORD 二选其一）
 
-- 创建 PLAYLIST，填入 歌单ID，多个歌单ID用空格分隔（可选）
+- 创建 PLAYLIST，填入 歌单 ID，多个歌单 ID 用空格分隔（可选）
 
-- 创建 SCKEY（Server 酱调用代码，可选）
+- 创建 SCKEY（Server 酱 SendKey，可选）
 
 ![](README/image-20201110002853759.png)
 
@@ -137,7 +129,7 @@ GitHub 现在有了手动执行的功能，点击下图 Run workflow 即可。
 
 ### 5. 多次执行（可选）
 
-如果觉得每天刷的听歌量达不到要求，可以尝试每天多次执行的解决方案，修改 *.github/workflows/action.yml* 内的 *cron* 值为 **"0 4/16 \* \* \*"** ，即在每天的 0 点和 12 点执行。
+如果觉得每天刷的听歌量达不到要求，可以尝试每天多次执行的解决方案，修改 _.github/workflows/action.yml_ 内的 _cron_ 值为 **"0 4/16 \* \* \*"** ，即在每天的 0 点和 12 点执行。
 
 ## 注意事项
 
@@ -146,3 +138,5 @@ GitHub 现在有了手动执行的功能，点击下图 Run workflow 即可。
 - 必须手动修改内容，不然不会自动执行！
 
 - 为了方便他人学习研究，脚本保留了网易云音乐完整的表单加密算法
+
+- Server 酱的应用场景取决于个人，请跟据自己的需求选择消息通道并进行配置，如在使用和配置方面有疑问，可以提出 Issue 或直接联系 Server Chan 管理员

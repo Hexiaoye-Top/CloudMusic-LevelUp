@@ -196,9 +196,12 @@ class CloudMusic:
             return ("刷听歌量失败 " + str(ret['code']) + "：" + ret['message'])
             exit(ret['code'])
 
-    def server_chan(self, sckey, text):
-        url = 'https://sc.ftqq.com/%s.send?' % sckey + 'text=网易云打卡脚本&desp=%s' % text
-        ret = requests.get(url)
+    # Server Chan Turbo
+    def server_chan_turbo(self, sendkey, text):
+        url = 'https://sctapi.ftqq.com/%s.send' % sendkey
+        headers = {"Content-type": "application/x-www-form-urlencoded"}
+        content = {"title": "网易云打卡脚本", "desp": text}
+        ret = requests.post(url, headers=headers, data=content)
         print(ret.text)
 
 
@@ -227,20 +230,20 @@ if __name__ == "__main__":
     # Start
     app = CloudMusic()
     print(30 * "=")
+    # Login
+    res_login = app.login(info['phone'], info['password'])
+    # Sign In
+    res_sign = app.sign()
+    # Music Task
+    res_task = app.task(info['playlist'])
+    # Print Response
+    res = res_login + "\n\n" + res_sign + "\n\n" + res_task
+    print(res)
+    print(30 * "=")
     try:
-        # Login
-        res_login = app.login(info['phone'], info['password'])
-        # Sign In
-        res_sign = app.sign()
-        # Music Task
-        res_task = app.task(info['playlist'])
-        # Print Response
-        res = res_login + "\n\n" + res_sign + "\n\n" + res_task
         if info['sckey']:
             # 调用Server酱
-            app.server_chan(info['sckey'][0], res)
-        print(res)
-    except KeyboardInterrupt:
-        print(30 * "=")
-        exit()
+            app.server_chan_turbo(info['sckey'][0], res)
+    except Exception as err:
+        print("Server酱调用失败：" + err)
     print(30 * "=")
