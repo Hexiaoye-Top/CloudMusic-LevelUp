@@ -85,6 +85,16 @@ python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
 
    ![](README/image-20201113151600263.png)
 
+### Telegram Bot 推送
+
+使用 Telegram 机器人按时推送脚本执行结果。
+
+使用方法：
+
+1. 创建 Telegram 机器人并获取机器人 Token 以及个人账户的 Chat ID
+
+2. 执行脚本时指定参数`-t`和`-c`，分别对应 Token 和 Chat ID
+
 ## GitHub Actions 部署
 
 ### 1. Fork 该仓库
@@ -100,6 +110,10 @@ python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
 - 创建 PLAYLIST，填入 歌单 ID，多个歌单 ID 用空格分隔（可选）
 
 - 创建 SCKEY（Server 酱 SendKey，可选）
+
+- 创建 TG_BOT_TOKEN（Telegram 机器人 Token，可选）
+
+- 创建 TG_CHAT_ID（Telegram 账号 Chat ID，可选）
 
 ![](README/image-20201110002853759.png)
 

@@ -21,13 +21,25 @@ from Crypto.Cipher import AES
 # Get the arguments input.
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("phone", help="your Phone Number")
-    parser.add_argument("password", help="MD5 value of the password")
-    parser.add_argument("-s", dest="SCKEY", nargs="*", help="SCKEY of the Server Chan")
-    parser.add_argument("-l", dest="PLAYLIST", nargs="*", help="your playlist")
+    parser.add_argument("phone", help="Your Phone Number.")
+    parser.add_argument("password", help="The MD5 value of the password.")
+    parser.add_argument("-s", dest="sckey", nargs="*", help="The SCKEY of the Server Chan.")
+    parser.add_argument("-t", dest="tg_bot_token", nargs="*", help="The token of your telegram bot.")
+    parser.add_argument("-c", dest="tg_chat_id", nargs="*", help="The chat ID of your telegram account.")
+    parser.add_argument("-l", dest="playlist", nargs="*", help="Your playlist.")
     args = parser.parse_args()
 
-    return {"phone": args.phone, "password": args.password, "sckey": args.SCKEY, "playlist": args.PLAYLIST}
+    if bool(args.tg_bot_token) == bool(args.tg_chat_id):
+        return {
+            "phone": args.phone,
+            "password": args.password,
+            "sckey": args.sckey,
+            "tg_bot_token": args.tg_bot_token,
+            "tg_chat_id": args.tg_chat_id,
+            "playlist": args.playlist,
+        }
+    else:
+        exit("Telegram Bot Token与Telegram Chat ID必须同时存在")
 
 
 # Random String Generator
@@ -52,12 +64,23 @@ def rsa_encrypt(text, pub_key, modulus):
     return format(rs, "x").zfill(256)
 
 
-# Server Chan Turbo
-def server_chan_turbo(sendkey, text):
+# Server Chan Turbo Push
+def server_chan_push(sendkey, text):
     url = "https://sctapi.ftqq.com/%s.send" % sendkey
     headers = {"Content-type": "application/x-www-form-urlencoded"}
     content = {"title": "网易云打卡脚本", "desp": text}
     ret = requests.post(url, headers=headers, data=content)
+    print(ret.text)
+
+
+# Telegram Bot Push
+def telegram_push(token, chat_id, text):
+    url = "https://api.telegram.org/bot{0}/sendMessage".format(token)
+    data = {
+        "chat_id": chat_id,
+        "text": text,
+    }
+    ret = requests.post(url, data=data)
     print(ret.text)
 
 
@@ -224,7 +247,10 @@ if __name__ == "__main__":
     try:
         if info["sckey"]:
             # 调用Server酱
-            server_chan_turbo(info["sckey"][0], res_print)
+            server_chan_push(info["sckey"][0], res_print)
+        if info["tg_bot_token"]:
+            # 调用Telegram Bot
+            telegram_push(info["tg_bot_token"], info["tg_chat_id"], res_print)
     except Exception:
         print("Server酱调用失败：" + str(Exception))
     print(30 * "=")
