@@ -5,7 +5,7 @@
 @DSEC    :   网易云音乐签到刷歌脚本
 @AUTHOR  :   Secriy
 @DATE    :   2020/08/25
-@VERSION :   2.2
+@VERSION :   2.3
 """
 
 import os
@@ -248,9 +248,12 @@ if __name__ == "__main__":
         if info["sckey"]:
             # 调用Server酱
             server_chan_push(info["sckey"][0], res_print)
+    except Exception as err:
+        print("Server酱推送失败：" + str(err))
+    try:
         if info["tg_bot_token"]:
             # 调用Telegram Bot
-            telegram_push(info["tg_bot_token"], info["tg_chat_id"], res_print)
-    except Exception:
-        print("Server酱调用失败：" + str(Exception))
+            telegram_push(info["tg_bot_token"][0], info["tg_chat_id"][0], res_print)
+    except Exception as err:
+        print("Telegram推送失败：" + str(err))
     print(30 * "=")
