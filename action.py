@@ -23,10 +23,26 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("phone", help="Your Phone Number.")
     parser.add_argument("password", help="The MD5 value of the password.")
-    parser.add_argument("-s", dest="sckey", nargs="*", help="The SCKEY of the Server Chan.")
-    parser.add_argument("-t", dest="tg_bot_token", nargs="*", help="The token of your telegram bot.")
-    parser.add_argument("-c", dest="tg_chat_id", nargs="*", help="The chat ID of your telegram account.")
-    parser.add_argument("-l", dest="playlist", nargs="*", help="Your playlist.")
+    parser.add_argument("-s",
+                        dest="sckey",
+                        nargs="*",
+                        help="The SCKEY of the Server Chan.")
+    parser.add_argument("-t",
+                        dest="tg_bot_token",
+                        nargs="*",
+                        help="The token of your telegram bot.")
+    parser.add_argument("-c",
+                        dest="tg_chat_id",
+                        nargs="*",
+                        help="The chat ID of your telegram account.")
+    parser.add_argument("-b",
+                        dest="bark_key",
+                        nargs="*",
+                        help="The key of your bark app.")
+    parser.add_argument("-l",
+                        dest="playlist",
+                        nargs="*",
+                        help="Your playlist.")
     args = parser.parse_args()
 
     if bool(args.tg_bot_token) == bool(args.tg_chat_id):
@@ -36,6 +52,7 @@ def get_args():
             "sckey": args.sckey,
             "tg_bot_token": args.tg_bot_token,
             "tg_chat_id": args.tg_chat_id,
+            "bark_key": args.bark_key,
             "playlist": args.playlist,
         }
     else:
@@ -60,8 +77,17 @@ def aes_encrypt(text, sec_key):
 # RSA Encrypt
 def rsa_encrypt(text, pub_key, modulus):
     text = text[::-1]
-    rs = int(text.encode("utf-8").hex(), 16) ** int(pub_key, 16) % int(modulus, 16)
+    rs = int(text.encode("utf-8").hex(), 16)**int(pub_key, 16) % int(
+        modulus, 16)
     return format(rs, "x").zfill(256)
+
+
+# Error
+def handle_error(func, err, *args, **kwargs):
+    try:
+        func(*args)
+    except Exception as err:
+        print("{0}推送失败：".format(err) + str(err))
 
 
 # Server Chan Turbo Push
@@ -82,6 +108,16 @@ def telegram_push(token, chat_id, text):
     }
     ret = requests.post(url, data=data)
     print(ret.text)
+
+
+# Bark Push
+def bark_push(bark_key, bark_save, text):
+    data = {"title": "网易云打卡脚本", "body": text}
+    headers = {'Content-Type': 'application/json;charset=utf-8'}
+    url = 'https://api.day.app/{0}/?isArchive={1}'.format(bark_key, bark_save)
+    ret = requests.post(url, json=data, headers=headers)
+    state = json.loads(ret.text)
+    print(state)
 
 
 class Encrypt:
@@ -108,36 +144,50 @@ class CloudMusic:
         self.csrf = ""
         self.nickname = ""
         self.login_data = self.enc.encrypt(
-            json.dumps({"phone": phone, "countrycode": "86", "password": password, "rememberLogin": "true"})
-        )
+            json.dumps({
+                "phone": phone,
+                "countrycode": "86",
+                "password": password,
+                "rememberLogin": "true"
+            }))
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+            "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/84.0.4147.89 "
             "Safari/537.36",
-            "Referer": "http://music.163.com/",
-            "Accept-Encoding": "gzip, deflate",
+            "Referer":
+            "http://music.163.com/",
+            "Accept-Encoding":
+            "gzip, deflate",
         }
 
     def login(self):
         login_url = "https://music.163.com/weapi/login/cellphone"
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+            "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/84.0.4147.89 Safari/537.36",
-            "Referer": "http://music.163.com/",
-            "Accept-Encoding": "gzip, deflate",
-            "Cookie": "os=pc; osver=Microsoft-Windows-10-Professional-build-10586-64bit; appver=2.0.3.131777; "
+            "Referer":
+            "http://music.163.com/",
+            "Accept-Encoding":
+            "gzip, deflate",
+            "Cookie":
+            "os=pc; osver=Microsoft-Windows-10-Professional-build-10586-64bit; appver=2.0.3.131777; "
             "channel=netease; __remember_me=true;",
         }
-        res = self.session.post(url=login_url, data=self.login_data, headers=headers)
+        res = self.session.post(url=login_url,
+                                data=self.login_data,
+                                headers=headers)
         ret = json.loads(res.text)
         if ret["code"] == 200:
-            self.csrf = requests.utils.dict_from_cookiejar(res.cookies)["__csrf"]
+            self.csrf = requests.utils.dict_from_cookiejar(
+                res.cookies)["__csrf"]
             self.nickname = ret["profile"]["nickname"]
             retext = '"{nickname}" 登录成功，当前等级：{level}\n\n'.format(
-                nickname=self.nickname, level=self.get_level()["level"]
-            ) + "距离升级还需听{before_count}首歌".format(
-                before_count=self.get_level()["nextPlayCount"] - self.get_level()["nowPlayCount"]
-            )
+                nickname=self.nickname, level=self.get_level()
+                ["level"]) + "距离升级还需听{before_count}首歌".format(
+                    before_count=self.get_level()["nextPlayCount"] -
+                    self.get_level()["nowPlayCount"])
             return retext
         else:
             return "登录失败 " + str(ret["code"]) + "：" + ret["message"]
@@ -145,7 +195,9 @@ class CloudMusic:
     # Get the level of account.
     def get_level(self):
         url = "https://music.163.com/weapi/user/level?csrf_token=" + self.csrf
-        res = self.session.post(url=url, data=self.login_data, headers=self.headers)
+        res = self.session.post(url=url,
+                                data=self.login_data,
+                                headers=self.headers)
         ret = json.loads(res.text)
         return ret["data"]
 
@@ -160,7 +212,9 @@ class CloudMusic:
 
     def sign(self):
         sign_url = "https://music.163.com/weapi/point/dailyTask"
-        res = self.session.post(url=sign_url, data=self.enc.encrypt('{"type":0}'), headers=self.headers)
+        res = self.session.post(url=sign_url,
+                                data=self.enc.encrypt('{"type":0}'),
+                                headers=self.headers)
         ret = json.loads(res.text)
         if ret["code"] == 200:
             return "签到成功，经验+" + str(ret["point"])
@@ -174,9 +228,10 @@ class CloudMusic:
         recommend_url = "https://music.163.com/weapi/v1/discovery/recommend/resource"
         music_lists = []
         if not custom:
-            res = self.session.post(
-                url=recommend_url, data=self.enc.encrypt('{"csrf_token":"' + self.csrf + '"}'), headers=self.headers
-            )
+            res = self.session.post(url=recommend_url,
+                                    data=self.enc.encrypt('{"csrf_token":"' +
+                                                          self.csrf + '"}'),
+                                    headers=self.headers)
             ret = json.loads(res.text)
             if ret["code"] != 200:
                 print("获取推荐歌曲失败 " + str(ret["code"]) + "：" + ret["message"])
@@ -189,37 +244,43 @@ class CloudMusic:
         for m in music_lists:
             res = self.session.post(
                 url=url,
-                data=self.enc.encrypt(json.dumps({"id": m, "n": 1000, "csrf_token": self.csrf})),
+                data=self.enc.encrypt(
+                    json.dumps({
+                        "id": m,
+                        "n": 1000,
+                        "csrf_token": self.csrf
+                    })),
                 headers=self.headers,
             )
             ret = json.loads(res.text)
             for i in ret["playlist"]["trackIds"]:
                 music_id.append(i["id"])
         # print("歌单大小：{musicCount}首\n".format(musicCount=len(music_id)))
-        post_data = json.dumps(
-            {
-                "logs": json.dumps(
-                    list(
-                        map(
-                            lambda x: {
-                                "action": "play",
-                                "json": {
-                                    "download": 0,
-                                    "end": "playend",
-                                    "id": x,
-                                    "sourceId": "",
-                                    "time": 240,
-                                    "type": "song",
-                                    "wifi": 0,
-                                },
+        post_data = json.dumps({
+            "logs":
+            json.dumps(
+                list(
+                    map(
+                        lambda x: {
+                            "action": "play",
+                            "json": {
+                                "download": 0,
+                                "end": "playend",
+                                "id": x,
+                                "sourceId": "",
+                                "time": 240,
+                                "type": "song",
+                                "wifi": 0,
                             },
-                            random.sample(music_id, 420 if len(music_id) > 420 else len(music_id)),
-                        )
-                    )
-                )
-            }
-        )
-        res = self.session.post(url="http://music.163.com/weapi/feedback/weblog", data=self.enc.encrypt(post_data))
+                        },
+                        random.sample(
+                            music_id,
+                            420 if len(music_id) > 420 else len(music_id)),
+                    )))
+        })
+        res = self.session.post(
+            url="http://music.163.com/weapi/feedback/weblog",
+            data=self.enc.encrypt(post_data))
         ret = json.loads(res.text)
         if ret["code"] == 200:
             return "刷听歌量成功"
@@ -231,29 +292,30 @@ if __name__ == "__main__":
     # Get Args
     info = get_args()
     # Start
-    app = CloudMusic(info["phone"], info["password"])
+    # app = CloudMusic(info["phone"], info["password"])
     print(30 * "=")
     # Login
-    res_login = app.login()
+    # res_login = app.login()
     # Sign In
-    res_sign = app.sign()
+    # res_sign = app.sign()
     # Music Task
-    res_task = app.task(info["playlist"])
+    # res_task = app.task(info["playlist"])
     # Print Response
-    res_print = res_login + "\n\n" + res_sign + "\n\n" + res_task
+    # res_print = res_login + "\n\n" + res_sign + "\n\n" + res_task
+    res_print = "dsada"
     print(res_print)
     print(30 * "=")
     # noinspection PyBroadException
-    try:
-        if info["sckey"]:
-            # 调用Server酱
-            server_chan_push(info["sckey"][0], res_print)
-    except Exception as err:
-        print("Server酱推送失败：" + str(err))
-    try:
-        if info["tg_bot_token"]:
-            # 调用Telegram Bot
-            telegram_push(info["tg_bot_token"][0], info["tg_chat_id"][0], res_print)
-    except Exception as err:
-        print("Telegram推送失败：" + str(err))
+
+    # Server酱推送
+    if info["sckey"]:
+        handle_error(server_chan_push, "Server酱", info["sckey"][0], res_print)
+    # Bark推送
+    if info["bark_key"]:
+        handle_error(bark_push, "Bark", info["bark_key"][0], 1, res_print)
+    # Telegram推送
+    if info["tg_bot_token"]:
+        handle_error(telegram_push, "Telegram", info["tg_bot_token"][0],
+                     info["tg_chat_id"][0], res_print)
+
     print(30 * "=")
