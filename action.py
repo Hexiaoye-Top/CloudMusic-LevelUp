@@ -292,21 +292,20 @@ if __name__ == "__main__":
     # Get Args
     info = get_args()
     # Start
-    # app = CloudMusic(info["phone"], info["password"])
+    app = CloudMusic(info["phone"], info["password"])
     print(30 * "=")
     # Login
-    # res_login = app.login()
+    res_login = app.login()
     # Sign In
-    # res_sign = app.sign()
+    res_sign = app.sign()
     # Music Task
-    # res_task = app.task(info["playlist"])
+    res_task = app.task(info["playlist"])
     # Print Response
-    # res_print = res_login + "\n\n" + res_sign + "\n\n" + res_task
-    res_print = "dsada"
+    res_print = res_login + "\n\n" + res_sign + "\n\n" + res_task
+    
     print(res_print)
     print(30 * "=")
     # noinspection PyBroadException
-
     # Server酱推送
     if info["sckey"]:
         handle_error(server_chan_push, "Server酱", info["sckey"][0], res_print)
