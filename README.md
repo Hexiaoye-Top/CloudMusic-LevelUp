@@ -95,6 +95,18 @@ python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
 
 2. 执行脚本时指定参数`-t`和`-c`，分别对应 Token 和 Chat ID
 
+### Bark 推送
+
+使用 Bark App 实现推送（建议 iOS/iPadOS 用户使用）
+
+使用方法：
+
+1. 安装 Bark 移动端程序
+
+2. 复制应用内的示例 URL 并截取其中的22位随机字符串
+
+3. 执行脚本时指定参数`-b`，后接上述22位字符串
+
 ## GitHub Actions 部署
 
 ### 1. Fork 该仓库
@@ -114,6 +126,8 @@ python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
 - 创建 TG_BOT_TOKEN（Telegram 机器人 Token，可选）
 
 - 创建 TG_CHAT_ID（Telegram 账号 Chat ID，可选）
+
+- 创建 BARK_KEY（Bark 设备密钥，可选）
 
 ![](README/image-20201110002853759.png)
 
