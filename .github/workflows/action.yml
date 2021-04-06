@@ -35,4 +35,4 @@ jobs:
           if [ ${NOMD5_PASSWORD} ];then PASSWORD=$(echo -n "${NOMD5_PASSWORD}"|md5sum|cut -d " " -f1); fi
           if [ ${PLAYLIST} ];then PLAYLIST_CMD="-l $PLAYLIST"; fi
           if [ ${TG_BOT_TOKEN} ] && [ ${TG_CHAT_ID} ];then TG_PUSH_CMD="-c $TG_CHAT_ID -t $TG_BOT_TOKEN"; fi
-          python3 action.py ${PHONE} ${PASSWORD} -s ${SCKEY} ${TG_PUSH_CMD} ${PLAYLIST_CMD}
+          python3 action.py ${PHONE} ${PASSWORD} -s ${SCKEY} ${TG_PUSH_CMD} ${PLAYLIST_CMD} -b ${bark_key}
