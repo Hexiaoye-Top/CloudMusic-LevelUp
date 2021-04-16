@@ -211,7 +211,7 @@ class CloudMusic:
     #     return ret["code"]
 
     def sign(self):
-        sign_url = "https://music.163.com/weapi/point/dailyTask"
+        sign_url = "https://music.163.com/weapi/point/dailyTask?{csrf}".format(csrf=self.csrf)
         res = self.session.post(url=sign_url,
                                 data=self.enc.encrypt('{"type":0}'),
                                 headers=self.headers)
@@ -302,7 +302,7 @@ if __name__ == "__main__":
     res_task = app.task(info["playlist"])
     # Print Response
     res_print = res_login + "\n\n" + res_sign + "\n\n" + res_task
-    
+
     print(res_print)
     print(30 * "=")
     # noinspection PyBroadException
