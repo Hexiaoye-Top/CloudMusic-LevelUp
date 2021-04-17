@@ -32,8 +32,11 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
+          WW_ID: ${{ secrets.WW_ID }}
+          AGENT_ID: ${{ secrets.AGENT_ID }}
+          APP_SECRETS: ${{ secrets.APP_SECRETS }}
         run: |
           if [ ${NOMD5_PASSWORD} ];then PASSWORD=$(echo -n "${NOMD5_PASSWORD}"|md5sum|cut -d " " -f1); fi
           if [ ${PLAYLIST} ];then PLAYLIST_CMD="-l $PLAYLIST"; fi
           if [ ${TG_BOT_TOKEN} ] && [ ${TG_CHAT_ID} ];then TG_PUSH_CMD="-c $TG_CHAT_ID -t $TG_BOT_TOKEN"; fi
-          python3 action.py ${PHONE} ${PASSWORD} -s ${SCKEY} ${TG_PUSH_CMD} ${PLAYLIST_CMD} -b ${BARK_KEY}
+          python3 action.py ${PHONE} ${PASSWORD} -s ${SCKEY} ${TG_PUSH_CMD} ${PLAYLIST_CMD} -b ${BARK_KEY} -w ${WW_ID} -e ${APP_SECRETS} -a ${AGENT_ID}

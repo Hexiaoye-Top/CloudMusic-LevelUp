@@ -334,6 +334,16 @@ if __name__ == "__main__":
 
     print(res_print)
     print(30 * "=")
-    # wecom_id_push(info["ww_id"],info["agent_id"],info["app_secrets"],);
-    wecom_id_push(info["ww_id"][0],info["agent_id"][0],info["app_secrets"][0],res_print);
+    if info["sckey"]:
+        handle_error(server_chan_push, "Server酱", info["sckey"][0], res_print)
+    # Bark推送
+    if info["bark_key"]:
+        handle_error(bark_push, "Bark", info["bark_key"][0], 1, res_print)
+    # Telegram推送
+    if info["tg_bot_token"]:
+        handle_error(telegram_push, "Telegram", info["tg_bot_token"][0],
+                    info["tg_chat_id"][0], res_print)
+    # 企业微信推送
+    if info["ww_id"]:
+        wecom_id_push(info["ww_id"][0],info["agent_id"][0],info["app_secrets"][0],res_print);
     print(30 * "=")
