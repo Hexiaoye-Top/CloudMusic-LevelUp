@@ -25,17 +25,32 @@ pip install -r requirements.txt
 
 ```shell
 # python action.py -h 查看usage
-usage: action.py [-h] [-s SCKEY] [-l [PLAYLIST [PLAYLIST ...]]] phone password
+usage: action.py [-h] [-s [SCKEY [SCKEY ...]]] [-t [TG_BOT_TOKEN [TG_BOT_TOKEN ...]]] [-c [TG_CHAT_ID [TG_CHAT_ID ...]]] [-b [BARK_KEY [BARK_KEY ...]]] [-l [PLAYLIST [PLAYLIST ...]]] [-w [WW_ID [WW_ID ...]]] [-a [AGENT_ID [AGENT_ID ...]]]
+                 [-e [APP_SECRETS [APP_SECRETS ...]]]
+                 phone password
 
 positional arguments:
-  phone                 your Phone Number
-  password              MD5 value of the password
+  phone                 Your Phone Number.
+  password              The MD5 value of the password.
 
 optional arguments:
   -h, --help            show this help message and exit
-  -s SCKEY              SCKEY of the Server Chan
+  -s [SCKEY [SCKEY ...]]
+                        The SCKEY of the Server Chan.
+  -t [TG_BOT_TOKEN [TG_BOT_TOKEN ...]]
+                        The token of your telegram bot.
+  -c [TG_CHAT_ID [TG_CHAT_ID ...]]
+                        The chat ID of your telegram account.
+  -b [BARK_KEY [BARK_KEY ...]]
+                        The key of your bark app.
   -l [PLAYLIST [PLAYLIST ...]]
-                        your playlist
+                        Your playlist.
+  -w [WW_ID [WW_ID ...]]
+                        Your Wecom ID.
+  -a [AGENT_ID [AGENT_ID ...]]
+                        Your Wecom App-AgentID.
+  -e [APP_SECRETS [APP_SECRETS ...]]
+                        Your Wecom App-Secrets.
 ```
 
 密码的 MD5 值计算可以在[MD5 在线加密](https://md5jiami.51240.com/)上进行，取 32 位小写值
@@ -103,9 +118,17 @@ python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
 
 1. 安装 Bark 移动端程序
 
-2. 复制应用内的示例 URL 并截取其中的22位随机字符串
+2. 复制应用内的示例 URL 并截取其中的 22 位随机字符串
 
-3. 执行脚本时指定参数`-b`，后接上述22位字符串
+3. 执行脚本时指定参数`-b`，后接上述 22 位字符串
+
+### 企业微信推送
+
+使用方法:
+
+1. 配置企业微信，获取企业 ID、应用 ID、应用 Secret
+
+2. 执行脚本时指定参数` -w`、`-a`、`-e `，分别对应企业 ID、应用 ID 和应用 Secret
 
 ## GitHub Actions 部署
 
@@ -128,6 +151,12 @@ python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
 - 创建 TG_CHAT_ID（Telegram 账号 Chat ID，可选）
 
 - 创建 BARK_KEY（Bark 设备密钥，可选）
+
+- 创建 WW_ID （企业微信 ID，可选）
+
+- 创建 AGENT_ID （企业微信 App-AgentID，可选）
+
+- 创建 APP_SECRETS （企业微信 App-Secrets，可选）
 
 ![](README/image-20201110002853759.png)
 

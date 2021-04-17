@@ -1,4 +1,3 @@
-
 # -*- encoding: utf-8 -*-
 """
 @FILE    :   action.py
@@ -17,6 +16,7 @@ import argparse
 import random
 from Crypto.Cipher import AES
 import json
+
 
 # Get the arguments input.
 def get_args():
@@ -43,18 +43,15 @@ def get_args():
                         dest="playlist",
                         nargs="*",
                         help="Your playlist.")
-    parser.add_argument("-w",
-                        dest="ww_id",
-                        nargs="*",
-                        help="Your Wecom ID")
+    parser.add_argument("-w", dest="ww_id", nargs="*", help="Your Wecom ID.")
     parser.add_argument("-a",
                         dest="agent_id",
                         nargs="*",
-                        help="Your Wecom App-AgentID")
+                        help="Your Wecom App-AgentID.")
     parser.add_argument("-e",
                         dest="app_secrets",
                         nargs="*",
-                        help="Your Wecom App-Secrets")
+                        help="Your Wecom App-Secrets.")
     args = parser.parse_args()
 
     if bool(args.tg_bot_token) == bool(args.tg_chat_id):
@@ -68,7 +65,7 @@ def get_args():
             "playlist": args.playlist,
             "ww_id": args.ww_id,
             "app_secrets": args.app_secrets,
-            "agent_id": args.agent_id
+            "agent_id": args.agent_id,
         }
     else:
         exit("Telegram Bot Token与Telegram Chat ID必须同时存在")
@@ -128,11 +125,38 @@ def telegram_push(token, chat_id, text):
 # Bark Push
 def bark_push(bark_key, bark_save, text):
     data = {"title": "网易云打卡脚本", "body": text}
-    headers = {'Content-Type': 'application/json;charset=utf-8'}
-    url = 'https://api.day.app/{0}/?isArchive={1}'.format(bark_key, bark_save)
+    headers = {"Content-Type": "application/json;charset=utf-8"}
+    url = "https://api.day.app/{0}/?isArchive={1}".format(bark_key, bark_save)
     ret = requests.post(url, json=data, headers=headers)
     state = json.loads(ret.text)
     print(state)
+
+
+# Wecom Push
+def wecom_id_push(ww_id, agent_id, app_secrets, msg):
+    body = {
+        "touser": "@all",
+        "msgtype": "text",
+        "agentid": agent_id,
+        "text": {
+            "content": msg
+        },
+        "safe": 0,
+        "enable_id_trans": 0,
+        "enable_duplicate_check": 0,
+        "duplicate_check_interval": 1800,
+    }
+    access_token = requests.get(
+        "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={0}&corpsecret={1}"
+        .format(str(ww_id), app_secrets)).json()["access_token"]
+    res = requests.post(
+        "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={0}".
+        format(access_token),
+        data=json.dumps(body),
+    )
+    ret = res.json()
+    if (ret["errcode"] != 0):
+        print("微信推送配置错误")
 
 
 class Encrypt:
@@ -226,7 +250,8 @@ class CloudMusic:
     #     return ret["code"]
 
     def sign(self):
-        sign_url = "https://music.163.com/weapi/point/dailyTask?{csrf}".format(csrf=self.csrf)
+        sign_url = "https://music.163.com/weapi/point/dailyTask?{csrf}".format(
+            csrf=self.csrf)
         res = self.session.post(url=sign_url,
                                 data=self.enc.encrypt('{"type":0}'),
                                 headers=self.headers)
@@ -302,21 +327,7 @@ class CloudMusic:
         else:
             return "刷听歌量失败 " + str(ret["code"]) + "：" + ret["message"]
 
-def wecom_id_push(ww_id,agent_id,app_secrets,msg):
-    body = {
-        "touser": "@all",
-        "msgtype": "text",
-        "agentid": agent_id,
-        "text": {
-            "content": msg
-        },
-        "safe": 0,
-        "enable_id_trans": 0,
-        "enable_duplicate_check": 0,
-        "duplicate_check_interval": 1800
-    }
-    if requests.post("https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="+requests.get("https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid="+str(ww_id)+"&corpsecret="+app_secrets).json()["access_token"],data=json.dumps(body)).json()['errcode']!=0:
-        print("微信推送配置错误")
+
 if __name__ == "__main__":
     # Get Args
     info = get_args()
@@ -342,8 +353,9 @@ if __name__ == "__main__":
     # Telegram推送
     if info["tg_bot_token"]:
         handle_error(telegram_push, "Telegram", info["tg_bot_token"][0],
-                    info["tg_chat_id"][0], res_print)
+                     info["tg_chat_id"][0], res_print)
     # 企业微信推送
     if info["ww_id"]:
-        wecom_id_push(info["ww_id"][0],info["agent_id"][0],info["app_secrets"][0],res_print);
+        handle_error(wecom_id_push, "Wecom", info["ww_id"][0],
+                     info["agent_id"][0], info["app_secrets"][0], res_print)
     print(30 * "=")
