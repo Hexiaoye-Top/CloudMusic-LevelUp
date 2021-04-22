@@ -180,6 +180,7 @@ class CloudMusic:
     def __init__(self, phone, password):
         self.session = requests.Session()
         self.enc = Encrypt()
+        self.phone = phone
         self.csrf = ""
         self.nickname = ""
         self.login_data = self.enc.encrypt(
@@ -229,7 +230,7 @@ class CloudMusic:
                     self.get_level()["nowPlayCount"])
             return retext
         else:
-            return "登录失败 " + str(ret["code"]) + "：" + ret["message"]
+            return "账号 {0} 登录失败: ".format(self.phone) + str(ret["code"])
 
     # Get the level of account.
     def get_level(self):
@@ -328,34 +329,50 @@ class CloudMusic:
             return "刷听歌量失败 " + str(ret["code"]) + "：" + ret["message"]
 
 
-if __name__ == "__main__":
-    # Get Args
-    info = get_args()
+def task(info, phone, password):
     # Start
-    app = CloudMusic(info["phone"], info["password"])
-    print(30 * "=")
+    app = CloudMusic(phone, password)
     # Login
     res_login = app.login()
-    # Sign In
-    res_sign = app.sign()
-    # Music Task
-    res_task = app.task(info["playlist"])
-    # Print Response
-    res_print = res_login + "\n\n" + res_sign + "\n\n" + res_task
-
+    if not "400" in res_login:
+        # Sign In
+        res_sign = app.sign()
+        # Music Task
+        res_task = app.task(info["playlist"])
+        # Print Response
+        res_print = res_login + "\n\n" + res_sign + "\n\n" + res_task
+        # Server 酱推送
+        if info["sckey"]:
+            handle_error(server_chan_push, "Server酱", info["sckey"][0],
+                         res_print)
+        # Bark 推送
+        if info["bark_key"]:
+            handle_error(bark_push, "Bark", info["bark_key"][0], 1, res_print)
+        # Telegram 推送
+        if info["tg_bot_token"]:
+            handle_error(telegram_push, "Telegram", info["tg_bot_token"][0],
+                         info["tg_chat_id"][0], res_print)
+        # 企业微信推送
+        if info["ww_id"]:
+            handle_error(wecom_id_push, "Wecom", info["ww_id"][0],
+                         info["agent_id"][0], info["app_secrets"][0],
+                         res_print)
+        print(30 * "=")
+    else:
+        res_print = res_login
     print(res_print)
     print(30 * "=")
-    if info["sckey"]:
-        handle_error(server_chan_push, "Server酱", info["sckey"][0], res_print)
-    # Bark推送
-    if info["bark_key"]:
-        handle_error(bark_push, "Bark", info["bark_key"][0], 1, res_print)
-    # Telegram推送
-    if info["tg_bot_token"]:
-        handle_error(telegram_push, "Telegram", info["tg_bot_token"][0],
-                     info["tg_chat_id"][0], res_print)
-    # 企业微信推送
-    if info["ww_id"]:
-        handle_error(wecom_id_push, "Wecom", info["ww_id"][0],
-                     info["agent_id"][0], info["app_secrets"][0], res_print)
-    print(30 * "=")
+
+
+if __name__ == "__main__":
+    # Get arguments
+    info = get_args()
+    phone_list = info["phone"].split(",")
+    passwd_list = info["password"].split(",")
+    # Run tasks
+    for k, v in enumerate(phone_list):
+        print(30 * "=")
+        if passwd_list[k]:
+            task(info, phone_list[k], passwd_list[k])
+        else:
+            break

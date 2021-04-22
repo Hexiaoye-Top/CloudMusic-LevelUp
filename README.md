@@ -30,8 +30,8 @@ usage: action.py [-h] [-s [SCKEY [SCKEY ...]]] [-t [TG_BOT_TOKEN [TG_BOT_TOKEN .
                  phone password
 
 positional arguments:
-  phone                 Your Phone Number.
-  password              The MD5 value of the password.
+  phone                 List of Phone Number.
+  password              List of MD5 value of the password.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -69,7 +69,7 @@ optional arguments:
 
 ```shell
 # 必须添加-l指定参数
-python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
+python action.py [手机号列表] [32位MD5密码加密值列表] -l 5173689994 4901511925
 ```
 
 ### Server 酱 Turbo 版微信推送
@@ -89,13 +89,13 @@ python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
    用例：
 
    ```shell
-   python action.py 手机号 32位MD5密码加密值 -s [SendKey]
+   python action.py [手机号1],[手机号2] [32位MD5密码加密值1],[32位MD5密码加密值2] -s [SendKey]
    ```
 
    示例：
 
    ```shell
-   python action.py 10000000000 4******************************1 -s SSS111111T111112f3e421 -l 2133132 2311315 2434234
+   python action.py 10000000000,20000000000 4******************************1,3******************************2 -s SSS111111T111112f3e421 -l 2133132 2311315 2434234
    ```
 
    ![](README/image-20201113151600263.png)
@@ -136,9 +136,9 @@ python action.py 手机号 32位MD5密码加密值 -l 5173689994 4901511925
 
 ### 2. 创建 Secrets
 
-- 创建 PHONE，填入手机号（必填）
+- 创建 PHONE，填入手机号列表,以`,`分割（必填）
 
-- 创建 PASSWORD，填入 32 位 MD5 密码加密值，填写此项可不填 NOMD5_PASSWORD 项（与 NOMD5_PASSWORD 二选其一）
+- 创建 PASSWORD，填入 32 位 MD5 密码加密值列表，填写此项可不填 NOMD5_PASSWORD 项（与 NOMD5_PASSWORD 二选其一）
 
 - 创建 NOMD5_PASSWORD，填入密码，会自动转换密码为 MD5 值，填写此项可不填 PASSWORD 项（与 PASSWORD 二选其一）
 
@@ -189,6 +189,8 @@ GitHub 现在有了手动执行的功能，点击下图 Run workflow 即可。
 如果觉得每天刷的听歌量达不到要求，可以尝试每天多次执行的解决方案，修改 _.github/workflows/action.yml_ 内的 _cron_ 值为 **"0 4/16 \* \* \*"** ，即在每天的 0 点和 12 点执行。
 
 ## 注意事项
+
+- 手机号列表和密码列表信息必须按顺序一一对应
 
 - 网易云音乐限制每天最多计算 300 首
 
