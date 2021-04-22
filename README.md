@@ -136,11 +136,11 @@ python action.py [手机号列表] [32位MD5密码加密值列表] -l 5173689994
 
 ### 2. 创建 Secrets
 
-- 创建 PHONE，填入手机号列表,以`,`分割（必填）
+- 创建 PHONE，填入手机号列表，以`,`分割（必填）
 
-- 创建 PASSWORD，填入 32 位 MD5 密码加密值列表，填写此项可不填 NOMD5_PASSWORD 项（与 NOMD5_PASSWORD 二选其一）
+- 创建 PASSWORD，填入 32 位 MD5 密码加密值列表，以`,`分割，填写此项可不填 NOMD5_PASSWORD 项（与 NOMD5_PASSWORD 二选其一）
 
-- 创建 NOMD5_PASSWORD，填入密码，会自动转换密码为 MD5 值，填写此项可不填 PASSWORD 项（与 PASSWORD 二选其一）
+- 创建 NOMD5_PASSWORD，填入密码（不支持多个账号），会自动转换密码为 MD5 值，填写此项可不填 PASSWORD 项（与 PASSWORD 二选其一）
 
 - 创建 PLAYLIST，填入 歌单 ID，多个歌单 ID 用空格分隔（可选）
 
