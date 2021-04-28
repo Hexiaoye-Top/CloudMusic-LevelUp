@@ -42,7 +42,7 @@ optional arguments:
   -p PUSH_PLUS_KEY      The token of your pushplus account.
 ```
 
-密码可以为明文或明文的MD5值，脚本会自动判断明文密码并进行MD5计算。
+密码可以为明文或明文的 MD5 值，脚本会自动判断明文密码并进行 MD5 计算。
 
 MD5 值计算可以在[MD5 在线加密](https://md5jiami.51240.com/)上进行，取 32 位小写值
 
@@ -98,18 +98,17 @@ python .\action.py 1xx014x4636,2xx011x4226 1xxx2xx324x65fx6xb22846ea8xcx0x7,2xxx
 
 4. 执行脚本时带参数`-s`指定 SendKey
 
-   用例：
+用例：
 
-   ```shell
-   python action.py [手机号] [32位MD5密码加密值] -s [SendKey]
-   ```
+```shell
+python action.py [手机号] [32位MD5密码加密值] -s [SendKey]
+```
 
-   示例：
+示例：
 
-   ```shell
-   python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -s SSS111111T111112f3e421
-   ```
-
+```shell
+python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -s SSS111111T111112f3e421
+```
 
 #### Telegram Bot 推送
 
@@ -142,7 +141,7 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -t 1172135555:AAAA
 python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -b aaaaaaaaaaaaaaaaaaaaaa
 ```
 
-#### pushplus微信公众号推送
+#### pushplus 微信公众号推送
 
 使用[pushplus](http://www.pushplus.plus/)平台进行推送。
 
@@ -150,7 +149,7 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -b aaaaaaaaaaaaaaa
 
 1. 访问[pushplus](http://www.pushplus.plus/)官网，登录
 2. 找到**一对一推送**，并复制你的**token**
-3. 执行脚本时指定参数`-p`，后接上述token值
+3. 执行脚本时指定参数`-p`，后接上述 token 值
 
 示例：
 
@@ -163,7 +162,7 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -p aaa6aac77dc1111
 使用方法:
 
 1. 配置企业微信，获取企业 ID、应用 ID、应用 Secret
-2. 执行脚本时指定参数` -w`，其后输入企业 ID、应用 ID 和应用 Secrets三个参数，顺序固定
+2. 执行脚本时指定参数` -w`，其后输入企业 ID、应用 ID 和应用 Secrets 三个参数，顺序固定
 
 用例：
 
@@ -178,8 +177,8 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -w [企业ID] [应
 ### 2. 创建 Secrets
 
 - 创建 PHONE，填入手机号，多账号以`,`分割（必填）
-- 创建 PASSWORD，填入 32 位 MD5 密码加密值，多账号以`,`分割（与PASSWORD_PLAIN字段二选一）
-- 创建 PASSWORD_PLAIN，填入明文密码，多账号以`,`分割（与PASSWORD字段二选一）
+- 创建 PASSWORD，填入 32 位 MD5 密码加密值，多账号以`,`分割（与 PASSWORD_PLAIN 字段二选一）
+- 创建 PASSWORD_PLAIN，填入明文密码，多账号以`,`分割（与 PASSWORD 字段二选一）
 - 创建 SC_KEY（Server 酱 SendKey，可选）
 - 创建 TG_BOT_KEY（Telegram 机器人推送参数，可选）
 - 创建 BARK_KEY（Bark 推送参数，可选）
@@ -188,9 +187,9 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -w [企业ID] [应
 
 ![](README/image-20201110002853759.png)
 
-### 3. 创建playlist.txt
+### 3. 创建 playlist.txt
 
-项目默认包含playlist.txt文件，填写内容即可，每行一个歌单号。
+项目默认包含 playlist.txt 文件，填写内容即可，每行一个歌单号。
 
 ### 4. 启用 Action
 
@@ -222,7 +221,7 @@ GitHub 有手动执行的功能，点击下图 Run workflow 即可。
 
 ## 注意事项
 
-- 脚本只支持Python3环境
+- 脚本只支持 Python3 环境
 - 手机号列表和密码列表信息必须按顺序一一对应
 - 网易云音乐限制每天最多计算 300 首
 - 必须手动修改内容，不然不会自动执行！
