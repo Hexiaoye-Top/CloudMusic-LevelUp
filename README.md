@@ -162,7 +162,7 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -p aaa6aac77dc1111
 使用方法:
 
 1. 配置企业微信，获取企业 ID、应用 ID、应用 Secret
-2. 执行脚本时指定参数` -w`，其后输入企业 ID、应用 ID 和应用 Secrets 三个参数，顺序固定
+2. 执行脚本时指定参数`-w`，其后输入企业 ID、应用 ID 和应用 Secrets 三个参数，顺序固定
 
 用例：
 
@@ -180,9 +180,9 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -w [企业ID] [应
 - 创建 PASSWORD，填入 32 位 MD5 密码加密值，多账号以`,`分割（与 PASSWORD_PLAIN 字段二选一）
 - 创建 PASSWORD_PLAIN，填入明文密码，多账号以`,`分割（与 PASSWORD 字段二选一）
 - 创建 SC_KEY（Server 酱 SendKey，可选）
-- 创建 TG_BOT_KEY（Telegram 机器人推送参数，可选）
+- 创建 TG_BOT_KEY（Telegram 机器人推送参数，以空格分割多个参数，可选）
 - 创建 BARK_KEY（Bark 推送参数，可选）
-- 创建 WECOM_KEY （企业微信推送参数，可选）
+- 创建 WECOM_KEY （企业微信推送参数，以空格分割多个参数，可选）
 - 创建 PUSH_PLUS_KEY（pushplus 推送参数，可选）
 
 ![](README/image-20201110002853759.png)
