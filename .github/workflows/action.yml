@@ -26,17 +26,17 @@ jobs:
         env:
           PHONE: ${{ secrets.PHONE }}
           PASSWORD: ${{ secrets.PASSWORD }}
-          NOMD5_PASSWORD: ${{ secrets.NOMD5_PASSWORD }}
-          PLAYLIST: ${{ secrets.PLAYLIST }}
-          SCKEY: ${{ secrets.SCKEY }}
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          PASSWORD_PLAIN: ${{ secrets.PASSWORD_PLAIN }}
+          SC_KEY: ${{ secrets.SC_KEY }}
+          TG_BOT_KEY: ${{ secrets.TG_BOT_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
-          WW_ID: ${{ secrets.WW_ID }}
-          AGENT_ID: ${{ secrets.AGENT_ID }}
-          APP_SECRETS: ${{ secrets.APP_SECRETS }}
+          WECOM_KEY: ${{ secrets.WECOM_KEY }}
+          PUSH_PLUS_KEY: ${{ secrets.PUSH_PLUS_KEY }}
         run: |
-          if [ ${NOMD5_PASSWORD} ];then PASSWORD=$(echo -n "${NOMD5_PASSWORD}"|md5sum|cut -d " " -f1); fi
-          if [ ${PLAYLIST} ];then PLAYLIST_CMD="-l $PLAYLIST"; fi
-          if [ ${TG_BOT_TOKEN} ] && [ ${TG_CHAT_ID} ];then TG_PUSH_CMD="-c $TG_CHAT_ID -t $TG_BOT_TOKEN"; fi
-          python3 action.py ${PHONE} ${PASSWORD} -s ${SCKEY} ${TG_PUSH_CMD} ${PLAYLIST_CMD} -b ${BARK_KEY} -w ${WW_ID} -e ${APP_SECRETS} -a ${AGENT_ID}
+          if [ ${PASSWORD_PLAIN} ];then PASSWORD = PASSWORD_PLAIN; fi
+          if [ ${SC_KEY} ];then SC_CMD = "-s $SC_KEY"; fi
+          if [ ${TG_BOT_KEY} ];then TG_BOT_CMD="-t TG_BOT_KEY"; fi
+          if [ ${BARK_KEY} ];then BARK_CMD = "-b BARK_KEY"; fi
+          if [ ${WECOM_KEY} ];then WECOM_CMD = "-w WECOM_KEY"; fi
+          if [ ${PUSH_PLUS_KEY} ];then PUSH_PLUS_CMD = "-p PUSH_PLUS_KEY"; fi
+          python3 action.py ${PHONE} ${PASSWORD} ${SC_CMD} ${TG_BOT_CMD} ${BARK_CMD} ${WECOM_CMD} ${PUSH_PLUS_CMD}
