@@ -189,7 +189,7 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -w [企业ID] [应
 
 ![](README/image-20201110002853759.png)
 
-### 3. 创建 playlist.txt
+### 3. 创建 playlist.txt（如无必要不要使用）
 
 项目默认包含 playlist.txt 文件，填写内容即可，每行一个歌单号。
 
