@@ -233,3 +233,9 @@ GitHub 有手动执行的功能，点击下图 Run workflow 即可。
 ## TODO
 
 - 脚本功能太少，今后考虑开发比较实用的新功能
+
+## 联系方式
+
+### 微信
+
+![image](README/IMG_3483.png)
