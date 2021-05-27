@@ -3,8 +3,8 @@
 @FILE    :   action.py
 @DSEC    :   网易云音乐签到刷歌脚本
 @AUTHOR  :   Secriy
-@DATE    :   2020/08/25
-@VERSION :   2.4
+@DATE    :   2021/05/27
+@VERSION :   2.5
 """
 
 import os
@@ -45,28 +45,18 @@ def get_args():
 # Get custom playlist.txt
 def get_playlist():
     path = sys.path[0] + "/playlist.txt"
-    file = open(path)
+    try:
+        file = open(path)
+    except FileNotFoundError:
+        return []
     lines = file.readlines()
     return lines
-
-
-# Error
-def handle_error(func, err, *args, **kwargs):
-    try:
-        func(*args)
-    except Exception as err:
-        print("{0}推送失败：".format(err) + str(err))
 
 
 # Calculate the MD5 value of text
 def calc_md5(text):
     md5_text = hashlib.md5(text.encode(encoding="utf-8")).hexdigest()
     return md5_text
-
-
-# Random String Generator
-def create_secret_key(size):
-    return str(binascii.hexlify(os.urandom(size))[:16], encoding="utf-8")
 
 
 # AES Encrypt
@@ -86,68 +76,68 @@ def rsa_encrypt(text, pub_key, modulus):
     return format(rs, "x").zfill(256)
 
 
-# Server Chan Turbo Push
-def server_chan_push(sendkey, text):
-    url = "https://sctapi.ftqq.com/%s.send" % sendkey
-    headers = {"Content-type": "application/x-www-form-urlencoded"}
-    content = {"title": "网易云打卡", "desp": text}
-    ret = requests.post(url, headers=headers, data=content)
-    print("ServerChan: " + ret.text)
+class Push:
+    def __init__(self, text):
+        self.text = text
 
+    # Server Chan Turbo Push
+    def server_chan_push(self, arg):
+        url = "https://sctapi.ftqq.com/%s.send" % arg[0]
+        headers = {"Content-type": "application/x-www-form-urlencoded"}
+        content = {"title": "网易云打卡", "desp": self.text}
+        ret = requests.post(url, headers=headers, data=content)
+        print("ServerChan: " + ret.text)
 
-# Telegram Bot Push
-def telegram_push(token, chat_id, text):
-    url = "https://api.telegram.org/bot{0}/sendMessage".format(token)
-    data = {
-        "chat_id": chat_id,
-        "text": text,
-    }
-    ret = requests.post(url, data=data)
-    print("Telegram: " + ret.text)
+    # Telegram Bot Push
+    def telegram_push(self, arg):
+        url = "https://api.telegram.org/bot{0}/sendMessage".format(arg[0])
+        data = {
+            "chat_id": arg[1],
+            "text": self.text,
+        }
+        ret = requests.post(url, data=data)
+        print("Telegram: " + ret.text)
 
+    # Bark Push
+    def bark_push(self, arg):
+        data = {"title": "网易云打卡", "body": self.text}
+        headers = {"Content-Type": "application/json;charset=utf-8"}
+        url = "https://api.day.app/{0}/?isArchive={1}".format(arg[0], arg[1])
+        ret = requests.post(url, json=data, headers=headers)
+        print("Bark: " + ret.text)
 
-# Bark Push
-def bark_push(bark_key, bark_save, text):
-    data = {"title": "网易云打卡", "body": text}
-    headers = {"Content-Type": "application/json;charset=utf-8"}
-    url = "https://api.day.app/{0}/?isArchive={1}".format(bark_key, bark_save)
-    ret = requests.post(url, json=data, headers=headers)
-    print("Bark: " + ret.text)
+    # PushPlus Push
+    def push_plus_push(self, arg):
+        url = "http://www.pushplus.plus/send?token={0}&title={1}&content={2}&template={3}".format(
+            arg[0], "网易云打卡", self.text, "html"
+        )
+        ret = requests.get(url)
+        print("pushplus: " + ret.text)
 
-
-# PushPlus Push
-def push_plus_push(token, text):
-    url = "http://www.pushplus.plus/send?token={0}&title={1}&content={2}&template={3}".format(
-        token, "网易云打卡", text, "html"
-    )
-    ret = requests.get(url)
-    print("pushplus: " + ret.text)
-
-
-# Wecom Push
-def wecom_id_push(ww_id, agent_id, app_secrets, msg):
-    body = {
-        "touser": "@all",
-        "msgtype": "text",
-        "agentid": agent_id,
-        "text": {"content": msg},
-        "safe": 0,
-        "enable_id_trans": 0,
-        "enable_duplicate_check": 0,
-        "duplicate_check_interval": 1800,
-    }
-    access_token = requests.get(
-        "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={0}&corpsecret={1}".format(str(ww_id), app_secrets)
-    ).json()["access_token"]
-    res = requests.post(
-        "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={0}".format(access_token),
-        data=json.dumps(body),
-    )
-    ret = res.json()
-    if ret["errcode"] != 0:
-        print("微信推送配置错误")
-    else:
-        print("Wecom: " + ret)
+    # Wecom Push
+    def wecom_id_push(self, arg):
+        body = {
+            "touser": "@all",
+            "msgtype": "text",
+            "agentid": arg[1],
+            "text": {"content": self.text},
+            "safe": 0,
+            "enable_id_trans": 0,
+            "enable_duplicate_check": 0,
+            "duplicate_check_interval": 1800,
+        }
+        access_token = requests.get(
+            "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={0}&corpsecret={1}".format(str(arg[0]), arg[2])
+        ).json()["access_token"]
+        res = requests.post(
+            "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={0}".format(access_token),
+            data=json.dumps(body),
+        )
+        ret = res.json()
+        if ret["errcode"] != 0:
+            print("微信推送配置错误")
+        else:
+            print("Wecom: " + ret)
 
 
 class Encrypt:
@@ -161,7 +151,8 @@ class Encrypt:
         self.pubKey = "010001"
 
     def encrypt(self, text):
-        sec_key = create_secret_key(16)
+        # Random String Generator
+        sec_key = str(binascii.hexlify(os.urandom(16))[:16], encoding="utf-8")
         enc_text = aes_encrypt(aes_encrypt(text, self.nonce), sec_key)
         enc_sec_key = rsa_encrypt(sec_key, self.pubKey, self.modulus)
         return {"params": enc_text, "encSecKey": enc_sec_key}
@@ -180,8 +171,8 @@ class CloudMusic:
         )
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                          "Chrome/84.0.4147.89 "
-                          "Safari/537.36",
+            "Chrome/84.0.4147.89 "
+            "Safari/537.36",
             "Referer": "http://music.163.com/",
             "Accept-Encoding": "gzip, deflate",
         }
@@ -190,11 +181,11 @@ class CloudMusic:
         login_url = "https://music.163.com/weapi/login/cellphone"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                          "Chrome/84.0.4147.89 Safari/537.36",
+            "Chrome/84.0.4147.89 Safari/537.36",
             "Referer": "http://music.163.com/",
             "Accept-Encoding": "gzip, deflate",
             "Cookie": "os=pc; osver=Microsoft-Windows-10-Professional-build-10586-64bit; appver=2.0.3.131777; "
-                      "channel=netease; __remember_me=true;",
+            "channel=netease; __remember_me=true;",
         }
         res = self.session.post(url=login_url, data=self.login_data, headers=headers)
         ret = json.loads(res.text)
@@ -202,14 +193,14 @@ class CloudMusic:
             self.csrf = requests.utils.dict_from_cookiejar(res.cookies)["__csrf"]
             self.nickname = ret["profile"]["nickname"]
             self.uid = ret["account"]["id"]
-            retext = '"{nickname}" 登录成功，当前等级：{level}\n\n'.format(
-                nickname=self.nickname, level=self.get_level()["level"]
-            ) + "距离升级还需听{before_count}首歌".format(
-                before_count=self.get_level()["nextPlayCount"] - self.get_level()["nowPlayCount"]
+            text = '"{nickname}" 登录成功，当前等级：{level}\n\n距离升级还需听{before_count}首歌'.format(
+                nickname=self.nickname,
+                level=self.get_level()["level"],
+                before_count=self.get_level()["nextPlayCount"] - self.get_level()["nowPlayCount"],
             )
-            return retext
         else:
-            return "账号 {0} 登录失败: ".format(self.phone) + str(ret["code"])
+            text = "账号 {0} 登录失败: ".format(self.phone) + str(ret["code"])
+        return text
 
     # Get the level of account.
     def get_level(self):
@@ -232,11 +223,12 @@ class CloudMusic:
         res = self.session.post(url=sign_url, data=self.enc.encrypt('{"type":0}'), headers=self.headers)
         ret = json.loads(res.text)
         if ret["code"] == 200:
-            return "签到成功，经验+" + str(ret["point"])
+            text = "签到成功，经验+" + str(ret["point"])
         elif ret["code"] == -2:
-            return "今天已经签到过了"
+            text = "今天已经签到过了"
         else:
-            return "签到失败 " + str(ret["code"]) + "：" + ret["message"]
+            text = "签到失败 " + str(ret["code"]) + "：" + ret["message"]
+        return text
 
     def task(self, playlist):
         url = "https://music.163.com/weapi/v6/playlist/detail?csrf_token=" + self.csrf
@@ -277,10 +269,8 @@ class CloudMusic:
             ret = json.loads(res.text)
             for i in ret["playlist"]["tracks"]:
                 music_id.append([i["id"], i["dt"]])
-        ret = json.loads(res.text)
-        for i in ret["playlist"]["tracks"]:
-            music_id.append([i["id"], i["dt"]])
-        music_amount = len(music_id)  # 歌单大小
+        music_count = len(music_id)  # 歌单大小
+        music_amount = 500 if music_count > 500 else music_count  # 限制歌单大小
         post_data = json.dumps(
             {
                 "logs": json.dumps(
@@ -307,9 +297,10 @@ class CloudMusic:
         res = self.session.post(url="http://music.163.com/weapi/feedback/weblog", data=self.enc.encrypt(post_data))
         ret = json.loads(res.text)
         if ret["code"] == 200:
-            return "刷听歌量成功，共{0}首".format(music_amount)
+            text = "刷听歌量成功，共{0}首".format(music_amount)
         else:
-            return "刷听歌量失败 " + str(ret["code"]) + "：" + ret["message"]
+            text = "刷听歌量失败 " + str(ret["code"]) + "：" + ret["message"]
+        return text
 
 
 def run_task(info, phone, password):
@@ -317,32 +308,35 @@ def run_task(info, phone, password):
     app = CloudMusic(phone, password)
     # Login
     res_login = app.login()
+    print(res_login, end="\n\n")
     if "400" not in res_login:
         # Sign In
         res_sign = app.sign()
+        print(res_sign, end="\n\n")
         # Music Task
         res_task = app.task(get_playlist())
-        # Print Response
-        res_print = res_login + "\n\n" + res_sign + "\n\n" + res_task
-        print(res_print)
+        print(res_task)
         print(30 * "=")
-        # Server 酱推送
-        if info["sc_key"]:
-            handle_error(server_chan_push, "Server酱", info["sc_key"][0], res_print)
-        # Bark 推送
-        if info["bark_key"]:
-            handle_error(bark_push, "Bark", info["bark_key"][0], 1, res_print)
-        # Telegram 推送
-        if info["tg_bot_key"]:
-            handle_error(telegram_push, "Telegram", info["tg_bot_key"][0], info["tg_bot_key"][1], res_print)
-        # pushplus 推送
-        if info["push_plus_key"]:
-            handle_error(push_plus_push, "pushplus", info["push_plus_key"][0], res_print)
-        # 企业微信推送
-        if info["wecom_key"]:
-            handle_error(
-                wecom_id_push, "Wecom", info["wecom_key"][0], info["wecom_key"][1], info["wecom_key"][2], res_print
-            )
+        try:
+            # Push
+            push = Push(res_login + "\n\n" + res_sign + "\n\n" + res_task)
+            # ServerChan
+            if info["sc_key"]:
+                push.server_chan_push(info["sc_key"])
+            # Bark
+            if info["bark_key"]:
+                push.bark_push(info["bark_key"])
+            # Telegram
+            if info["tg_bot_key"]:
+                push.telegram_push(info["tg_bot_key"])
+            # pushplus
+            if info["push_plus_key"]:
+                push.push_plus_push(info["push_plus_key"])
+            # 企业微信
+            if info["wecom_key"]:
+                push.wecom_id_push(info["wecom_key"])
+        except Exception as err:
+            print(err)
     else:
         print(res_login)
     print(30 * "=")
