@@ -174,13 +174,14 @@ class CloudMusic:
         self.phone = phone
         self.csrf = ""
         self.nickname = ""
+        self.uid = ""
         self.login_data = self.enc.encrypt(
             json.dumps({"phone": phone, "countrycode": "86", "password": password, "rememberLogin": "true"})
         )
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/84.0.4147.89 "
-            "Safari/537.36",
+                          "Chrome/84.0.4147.89 "
+                          "Safari/537.36",
             "Referer": "http://music.163.com/",
             "Accept-Encoding": "gzip, deflate",
         }
@@ -189,17 +190,18 @@ class CloudMusic:
         login_url = "https://music.163.com/weapi/login/cellphone"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/84.0.4147.89 Safari/537.36",
+                          "Chrome/84.0.4147.89 Safari/537.36",
             "Referer": "http://music.163.com/",
             "Accept-Encoding": "gzip, deflate",
             "Cookie": "os=pc; osver=Microsoft-Windows-10-Professional-build-10586-64bit; appver=2.0.3.131777; "
-            "channel=netease; __remember_me=true;",
+                      "channel=netease; __remember_me=true;",
         }
         res = self.session.post(url=login_url, data=self.login_data, headers=headers)
         ret = json.loads(res.text)
         if ret["code"] == 200:
             self.csrf = requests.utils.dict_from_cookiejar(res.cookies)["__csrf"]
             self.nickname = ret["profile"]["nickname"]
+            self.uid = ret["account"]["id"]
             retext = '"{nickname}" 登录成功，当前等级：{level}\n\n'.format(
                 nickname=self.nickname, level=self.get_level()["level"]
             ) + "距离升级还需听{before_count}首歌".format(
@@ -252,6 +254,19 @@ class CloudMusic:
                 music_lists = [(d["id"]) for d in lists]
         else:
             music_lists = playlist
+        # 获取个人歌单
+        private_url = "https://music.163.com/weapi/user/playlist?csrf_token=" + self.csrf
+        pres = self.session.post(
+            url=private_url,
+            data=self.enc.encrypt(json.dumps({"uid": self.uid, "limit": 1001, "offset": 0, "csrf_token": self.csrf})),
+            headers=self.headers,
+        )
+        pret = json.loads(pres.text)
+        if pret["code"] == 200:
+            lists = pret["playlist"]
+            music_lists.extend([(d["id"]) for d in lists])
+        else:
+            print("个人歌单获取失败 " + str(pret["code"]) + "：" + pret["message"])
         music_id = []
         for m in music_lists:
             res = self.session.post(
@@ -260,9 +275,12 @@ class CloudMusic:
                 headers=self.headers,
             )
             ret = json.loads(res.text)
-            for i in ret["playlist"]["trackIds"]:
-                music_id.append(i["id"])
-        music_amount = 420 if len(music_id) > 420 else len(music_id)  # 歌单大小
+            for i in ret["playlist"]["tracks"]:
+                music_id.append([i["id"], i["dt"]])
+        ret = json.loads(res.text)
+        for i in ret["playlist"]["tracks"]:
+            music_id.append([i["id"], i["dt"]])
+        music_amount = len(music_id)  # 歌单大小
         post_data = json.dumps(
             {
                 "logs": json.dumps(
@@ -273,9 +291,9 @@ class CloudMusic:
                                 "json": {
                                     "download": 0,
                                     "end": "playend",
-                                    "id": x,
+                                    "id": x[0],
                                     "sourceId": "",
-                                    "time": 240,
+                                    "time": x[1] // 1000,
                                     "type": "song",
                                     "wifi": 0,
                                 },
