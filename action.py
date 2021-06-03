@@ -159,7 +159,7 @@ class Encrypt:
 
 
 class CloudMusic:
-    def __init__(self, phone, password):
+    def __init__(self, phone, country_code, password):
         self.session = requests.Session()
         self.enc = Encrypt()
         self.phone = phone
@@ -167,7 +167,7 @@ class CloudMusic:
         self.nickname = ""
         self.uid = ""
         self.login_data = self.enc.encrypt(
-            json.dumps({"phone": phone, "countrycode": "86", "password": password, "rememberLogin": "true"})
+            json.dumps({"phone": phone, "countrycode": country_code, "password": password, "rememberLogin": "true"})
         )
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -305,7 +305,11 @@ class CloudMusic:
 
 def run_task(info, phone, password):
     # Start
-    app = CloudMusic(phone, password)
+    country_code = "86"
+    if "+" in phone:
+        country_code = str(phone).split("+")[0]
+        phone = str(phone).split("+")[1]
+    app = CloudMusic(phone, country_code, password)
     # Login
     res_login = app.login()
     print(res_login, end="\n\n")

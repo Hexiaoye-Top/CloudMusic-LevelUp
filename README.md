@@ -42,6 +42,8 @@ optional arguments:
   -p PUSH_PLUS_KEY      The token of your pushplus account.
 ```
 
+手机号默认国际电话区号为中国大陆（+86），如果是海外用户请将手机号字段写为`区号+手机号`的格式，如`852+12343123`，国内用户无需此操作。
+
 密码可以为明文或明文的 MD5 值，脚本会自动判断明文密码并进行 MD5 计算。
 
 MD5 值计算可以在[MD5 在线加密](https://md5jiami.51240.com/)上进行，取 32 位小写值
