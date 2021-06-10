@@ -218,14 +218,15 @@ class CloudMusic:
     #     print(ret)
     #     return ret["code"]
 
-    def sign(self):
+    def sign(self, tp=0):
         sign_url = "https://music.163.com/weapi/point/dailyTask?{csrf}".format(csrf=self.csrf)
-        res = self.session.post(url=sign_url, data=self.enc.encrypt('{"type":0}'), headers=self.headers)
+        res = self.session.post(url=sign_url, data=self.enc.encrypt('{{"type":{0}}}'.format(tp)), headers=self.headers)
         ret = json.loads(res.text)
+        sign_type = "安卓端" if tp == 0 else "PC/Web端"
         if ret["code"] == 200:
-            text = "签到成功，经验+" + str(ret["point"])
+            text = "{0}签到成功，经验+{1}".format(sign_type, str(ret["point"]))
         elif ret["code"] == -2:
-            text = "今天已经签到过了"
+            text = "{0}今天已经签到过了".format(sign_type)
         else:
             text = "签到失败 " + str(ret["code"]) + "：" + ret["message"]
         return text
@@ -317,13 +318,16 @@ def run_task(info, phone, password):
         # Sign In
         res_sign = app.sign()
         print(res_sign, end="\n\n")
+        # Mobile Sign In
+        res_m_sign = app.sign(1)
+        print(res_m_sign, end="\n\n")
         # Music Task
         res_task = app.task(get_playlist())
         print(res_task)
         print(30 * "=")
         try:
             # Push
-            push = Push(res_login + "\n\n" + res_sign + "\n\n" + res_task)
+            push = Push(res_login + "\n\n" + res_sign + "\n\n" + res_m_sign + "\n\n" + res_task)
             # ServerChan
             if info["sc_key"]:
                 push.server_chan_push(info["sc_key"])
