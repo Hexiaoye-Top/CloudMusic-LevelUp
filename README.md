@@ -9,7 +9,8 @@
 1. 登录网易云音乐
 2. 执行签到，并显示奖励的积分数值
 3. 刷音乐播放量，返回具体数值
-4. 使用 GitHub Actions 挂脚本
+4. 使用 GitHub Actions 部署脚本
+5. 支持腾讯云函数部署脚本
 
 ## 使用方式
 
@@ -222,6 +223,10 @@ GitHub 有手动执行的功能，点击下图 Run workflow 即可。
 ### 5. 多次执行（可选）
 
 如果觉得每天刷的听歌量达不到要求，可以尝试每天多次执行的解决方案，修改 _.github/workflows/action.yml_ 内的 _cron_ 值为 **"0 4/16 \* \* \*"** ，即在每天的北京时间 0 点和 12 点执行。
+
+## 腾讯云函数部署
+
+具体步骤参考[腾讯云函数部署CloudMusic-LevelUp脚本](https://blog.secriy.com/2021/06/12/%E8%85%BE%E8%AE%AF%E4%BA%91%E5%87%BD%E6%95%B0%E9%83%A8%E7%BD%B2CloudMusic-LevelUp%E8%84%9A%E6%9C%AC/)
 
 ## 注意事项
 

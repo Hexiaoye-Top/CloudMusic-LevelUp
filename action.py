@@ -350,9 +350,7 @@ def run_task(info, phone, password):
     print(30 * "=")
 
 
-if __name__ == "__main__":
-    # Get arguments
-    infos = get_args()
+def task_pool(infos):
     phone_list = infos["phone"].split(",")
     passwd_list = infos["password"].split(",")
     # Run tasks
@@ -364,3 +362,8 @@ if __name__ == "__main__":
             run_task(infos, phone_list[k], passwd_list[k])
         else:
             run_task(infos, phone_list[k], calc_md5(passwd_list[k]))
+
+
+if __name__ == "__main__":
+    # Get arguments
+    task_pool(get_args())
