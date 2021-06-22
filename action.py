@@ -7,6 +7,7 @@
 @VERSION :   2.5
 """
 
+import datetime
 import os
 import requests
 import base64
@@ -243,11 +244,10 @@ class CloudMusic:
             if ret["code"] != 200:
                 print("获取推荐歌曲失败 " + str(ret["code"]) + "：" + ret["message"])
             else:
-                lists = ret["recommend"]
-                music_lists = [(d["id"]) for d in lists]
+                music_lists.extend([(d["id"]) for d in ret["recommend"]])
         else:
             music_lists = playlist
-        # 获取个人歌单
+        # Get personal playlists.
         private_url = "https://music.163.com/weapi/user/playlist?csrf_token=" + self.csrf
         pres = self.session.post(
             url=private_url,
@@ -256,10 +256,12 @@ class CloudMusic:
         )
         pret = json.loads(pres.text)
         if pret["code"] == 200:
-            lists = pret["playlist"]
-            music_lists.extend([(d["id"]) for d in lists])
+            for li in pret["playlist"]:
+                if li["subscribed"]:
+                    music_lists.append(li["id"])
         else:
-            print("个人歌单获取失败 " + str(pret["code"]) + "：" + pret["message"])
+            print("个人订阅歌单获取失败 " + str(pret["code"]) + "：" + pret["message"])
+        # Get all of the musics from playlists.
         music_id = []
         for m in music_lists:
             res = self.session.post(
@@ -268,10 +270,10 @@ class CloudMusic:
                 headers=self.headers,
             )
             ret = json.loads(res.text)
-            for i in ret["playlist"]["tracks"]:
-                music_id.append([i["id"], i["dt"]])
-        music_count = len(music_id)  # 歌单大小
-        music_amount = 500 if music_count > 500 else music_count  # 限制歌单大小
+            music_id.extend([i["id"] for i in ret["playlist"]["trackIds"]])
+        music_count = len(music_id)  # Length of the music list.
+        music_count = 500 if music_count > 500 else music_count  # Limit playlists.
+        random.seed(datetime.datetime.now())  # Random
         post_data = json.dumps(
             {
                 "logs": json.dumps(
@@ -282,14 +284,14 @@ class CloudMusic:
                                 "json": {
                                     "download": 0,
                                     "end": "playend",
-                                    "id": x[0],
+                                    "id": x,
                                     "sourceId": "",
-                                    "time": x[1] // 1000,
+                                    "time": 240,
                                     "type": "song",
                                     "wifi": 0,
                                 },
                             },
-                            random.sample(music_id, music_amount),
+                            random.sample(music_id, music_count),
                         )
                     )
                 )
@@ -298,7 +300,7 @@ class CloudMusic:
         res = self.session.post(url="http://music.163.com/weapi/feedback/weblog", data=self.enc.encrypt(post_data))
         ret = json.loads(res.text)
         if ret["code"] == 200:
-            text = "刷听歌量成功，共{0}首".format(music_amount)
+            text = "刷听歌量成功，共{0}首".format(music_count)
         else:
             text = "刷听歌量失败 " + str(ret["code"]) + "：" + ret["message"]
         return text
