@@ -1,6 +1,6 @@
 # CloudMusic-LevelUp
 
-> 网易云音乐刷歌升级脚本，欢迎提 issue 和 requests 帮助增强脚本功能。
+> 网易云音乐刷歌升级脚本，欢迎提 issue 和 PR 帮助增强脚本功能。
 >
 > [项目 GitHub 地址](https://github.com/Secriy/CloudMusic-LevelUp)
 
@@ -72,18 +72,6 @@ python .\action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7
 ```shell
 python .\action.py 1xx014x4636,2xx011x4226 1xxx2xx324x65fx6xb22846ea8xcx0x7,2xxx41x324x34fx6xb11546ea4xcx1x2
 ```
-
-### 自定义歌单
-
-鉴于有需要使用脚本指定歌单刷歌的需求，脚本增加了自定义歌单的功能，需要在*action.py*同级目录下新建纯文本文件*playlist.txt*，按行添加自定义的歌单即可，例如：
-
-```
-741934630
-6614758882
-2488376689
-```
-
-注意：当*playlist.txt*文件不为空时，脚本不会使用网易云音乐推荐的歌单刷听歌量，仅使用自定义的歌单。
 
 ### 消息推送
 
@@ -192,11 +180,7 @@ python action.py 1xx014x4636 1xxx2xx324x65fx6xb22846ea8xcx0x7 -w [企业ID] [应
 
 ![](README/image-20201110002853759.png)
 
-### 3. 创建 playlist.txt（如无必要不要使用）
-
-项目默认包含 playlist.txt 文件，填写内容即可，每行一个歌单号。
-
-### 4. 启用 Action
+### 3. 启用 Action
 
 点击 Actions，选择 **I understand my workflows, go ahead and enable them**
 

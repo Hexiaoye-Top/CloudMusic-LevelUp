@@ -3,8 +3,8 @@
 @FILE    :   action.py
 @DSEC    :   网易云音乐签到刷歌脚本
 @AUTHOR  :   Secriy
-@DATE    :   2021/05/27
-@VERSION :   2.5
+@DATE    :   2020/08/25
+@VERSION :   2.6
 """
 
 import datetime
@@ -43,17 +43,6 @@ def get_args():
     }
 
 
-# Get custom playlist.txt
-def get_playlist():
-    path = sys.path[0] + "/playlist.txt"
-    try:
-        file = open(path)
-    except FileNotFoundError:
-        return []
-    lines = file.readlines()
-    return lines
-
-
 # Calculate the MD5 value of text
 def calc_md5(text):
     md5_text = hashlib.md5(text.encode(encoding="utf-8")).hexdigest()
@@ -83,7 +72,7 @@ class Push:
 
     # Server Chan Turbo Push
     def server_chan_push(self, arg):
-        url = "https://sctapi.ftqq.com/%s.send" % arg[0]
+        url = "https://sctapi.ftqq.com/{0}.send".format(arg[0])
         headers = {"Content-type": "application/x-www-form-urlencoded"}
         content = {"title": "网易云打卡", "desp": self.text}
         ret = requests.post(url, headers=headers, data=content)
@@ -194,10 +183,12 @@ class CloudMusic:
             self.csrf = requests.utils.dict_from_cookiejar(res.cookies)["__csrf"]
             self.nickname = ret["profile"]["nickname"]
             self.uid = ret["account"]["id"]
-            text = '"{nickname}" 登录成功，当前等级：{level}\n\n距离升级还需听{before_count}首歌'.format(
+            level = self.get_level()
+            text = '"{nickname}" 登录成功，当前等级：{level}\n\n距离升级还需听{count}首歌\n\n距离升级还需登录{days}天'.format(
                 nickname=self.nickname,
-                level=self.get_level()["level"],
-                before_count=self.get_level()["nextPlayCount"] - self.get_level()["nowPlayCount"],
+                level=level["level"],
+                count=level["nextPlayCount"] - level["nowPlayCount"],
+                days=level["nextLoginCount"] - level["nowLoginCount"],
             )
         else:
             text = "账号 {0} 登录失败: ".format(self.phone) + str(ret["code"])
@@ -209,15 +200,6 @@ class CloudMusic:
         res = self.session.post(url=url, data=self.login_data, headers=self.headers)
         ret = json.loads(res.text)
         return ret["data"]
-
-    # def refresh(self):
-    #     url = "https://music.163.com/weapi/login/token/refresh?csrf_token=" + self.csrf
-    #     res = self.session.post(url=url,
-    #                             data=self.loginData,
-    #                             headers=self.headers)
-    #     ret = json.loads(res.text)
-    #     print(ret)
-    #     return ret["code"]
 
     def sign(self, tp=0):
         sign_url = "https://music.163.com/weapi/point/dailyTask?{csrf}".format(csrf=self.csrf)
@@ -232,48 +214,68 @@ class CloudMusic:
             text = "签到失败 " + str(ret["code"]) + "：" + ret["message"]
         return text
 
-    def task(self, playlist):
-        url = "https://music.163.com/weapi/v6/playlist/detail?csrf_token=" + self.csrf
+    def get_recommend_playlists(self):
         recommend_url = "https://music.163.com/weapi/v1/discovery/recommend/resource"
-        music_lists = []
-        if not playlist:
-            res = self.session.post(
-                url=recommend_url, data=self.enc.encrypt('{"csrf_token":"' + self.csrf + '"}'), headers=self.headers
-            )
-            ret = json.loads(res.text)
-            if ret["code"] != 200:
-                print("获取推荐歌曲失败 " + str(ret["code"]) + "：" + ret["message"])
-            else:
-                music_lists.extend([(d["id"]) for d in ret["recommend"]])
+        res = self.session.post(
+            url=recommend_url, data=self.enc.encrypt('{"csrf_token":"' + self.csrf + '"}'), headers=self.headers
+        )
+        ret = json.loads(res.text)
+        playlists = []
+        if ret["code"] == 200:
+            playlists.extend([(d["id"]) for d in ret["recommend"]])
         else:
-            music_lists = playlist
-        # Get personal playlists.
+            print("获取推荐歌曲失败 " + str(ret["code"]) + "：" + ret["message"])
+        return playlists
+
+    def get_subscribe_playlists(self):
         private_url = "https://music.163.com/weapi/user/playlist?csrf_token=" + self.csrf
-        pres = self.session.post(
+        res = self.session.post(
             url=private_url,
             data=self.enc.encrypt(json.dumps({"uid": self.uid, "limit": 1001, "offset": 0, "csrf_token": self.csrf})),
             headers=self.headers,
         )
-        pret = json.loads(pres.text)
-        if pret["code"] == 200:
-            for li in pret["playlist"]:
+        ret = json.loads(res.text)
+        subscribed_lists = []
+        if ret["code"] == 200:
+            for li in ret["playlist"]:
                 if li["subscribed"]:
-                    music_lists.append(li["id"])
+                    subscribed_lists.append(li["id"])
         else:
-            print("个人订阅歌单获取失败 " + str(pret["code"]) + "：" + pret["message"])
-        # Get all of the musics from playlists.
-        music_id = []
-        for m in music_lists:
+            print("个人订阅歌单获取失败 " + str(ret["code"]) + "：" + ret["message"])
+        return subscribed_lists
+
+    def get_musics(self):
+        detail_url = "https://music.163.com/weapi/v6/playlist/detail?csrf_token=" + self.csrf
+        musics = []
+        for m in self.get_recommend_playlists():
             res = self.session.post(
-                url=url,
+                url=detail_url,
                 data=self.enc.encrypt(json.dumps({"id": m, "n": 1000, "csrf_token": self.csrf})),
                 headers=self.headers,
             )
             ret = json.loads(res.text)
-            music_id.extend([i["id"] for i in ret["playlist"]["trackIds"]])
-        music_count = len(music_id)  # Length of the music list.
-        music_count = 500 if music_count > 500 else music_count  # Limit playlists.
-        random.seed(datetime.datetime.now())  # Random
+            musics.extend([i["id"] for i in ret["playlist"]["trackIds"]])
+        amount = 320 - len(musics)
+        if amount <= 0:
+            musics = random.sample(musics, 320)
+            amount = 200
+        for m in self.get_subscribe_playlists():
+            res = self.session.post(
+                url=detail_url,
+                data=self.enc.encrypt(json.dumps({"id": m, "n": 1000, "csrf_token": self.csrf})),
+                headers=self.headers,
+            )
+            ret = json.loads(res.text)
+            random.seed(datetime.datetime.now())  # Random
+            track_ids = [i["id"] for i in ret["playlist"]["trackIds"]]
+            if len(track_ids) > amount:
+                musics.extend(random.sample(track_ids, amount))
+            else:
+                musics.extend(track_ids)
+        return musics
+
+    def task(self):
+        feedback_url = "http://music.163.com/weapi/feedback/weblog"
         post_data = json.dumps(
             {
                 "logs": json.dumps(
@@ -291,16 +293,16 @@ class CloudMusic:
                                     "wifi": 0,
                                 },
                             },
-                            random.sample(music_id, music_count),
+                            self.get_musics(),
                         )
                     )
                 )
             }
         )
-        res = self.session.post(url="http://music.163.com/weapi/feedback/weblog", data=self.enc.encrypt(post_data))
+        res = self.session.post(url=feedback_url, data=self.enc.encrypt(post_data))
         ret = json.loads(res.text)
         if ret["code"] == 200:
-            text = "刷听歌量成功，共{0}首".format(music_count)
+            text = "刷听歌量成功"
         else:
             text = "刷听歌量失败 " + str(ret["code"]) + "：" + ret["message"]
         return text
@@ -316,39 +318,42 @@ def run_task(info, phone, password):
     # Login
     res_login = app.login()
     print(res_login, end="\n\n")
-    if "400" not in res_login:
-        # Sign In
-        res_sign = app.sign()
-        print(res_sign, end="\n\n")
-        # Mobile Sign In
-        res_m_sign = app.sign(1)
-        print(res_m_sign, end="\n\n")
-        # Music Task
-        res_task = app.task(get_playlist())
-        print(res_task)
-        print(30 * "=")
-        try:
-            # Push
-            push = Push(res_login + "\n\n" + res_sign + "\n\n" + res_m_sign + "\n\n" + res_task)
-            # ServerChan
-            if info["sc_key"]:
-                push.server_chan_push(info["sc_key"])
-            # Bark
-            if info["bark_key"]:
-                push.bark_push(info["bark_key"])
-            # Telegram
-            if info["tg_bot_key"]:
-                push.telegram_push(info["tg_bot_key"])
-            # pushplus
-            if info["push_plus_key"]:
-                push.push_plus_push(info["push_plus_key"])
-            # 企业微信
-            if info["wecom_key"]:
-                push.wecom_id_push(info["wecom_key"])
-        except Exception as err:
-            print(err)
-    else:
+    if "400" in res_login:
         print(res_login)
+        print(30 * "=")
+        return
+    # Sign In
+    res_sign = app.sign()
+    print(res_sign, end="\n\n")
+    # Mobile Sign In
+    res_m_sign = app.sign(1)
+    print(res_m_sign, end="\n\n")
+    # Music Task
+    res_task = "刷听歌量失败"
+    for i in range(1):
+        res_task = app.task()
+        print(res_task)
+    print(30 * "=")
+    try:
+        # Push
+        push = Push(res_login + "\n\n" + res_sign + "\n\n" + res_m_sign + "\n\n" + res_task)
+        # ServerChan
+        if info["sc_key"]:
+            push.server_chan_push(info["sc_key"])
+        # Bark
+        if info["bark_key"]:
+            push.bark_push(info["bark_key"])
+        # Telegram
+        if info["tg_bot_key"]:
+            push.telegram_push(info["tg_bot_key"])
+        # pushplus
+        if info["push_plus_key"]:
+            push.push_plus_push(info["push_plus_key"])
+        # 企业微信
+        if info["wecom_key"]:
+            push.wecom_id_push(info["wecom_key"])
+    except Exception as err:
+        print(err)
     print(30 * "=")
 
 
