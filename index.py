@@ -4,11 +4,11 @@ import action
 infos = {
     "phone": "",
     "password": "",
-    "sc_key": "",
-    "tg_bot_key": "",
-    "bark_key": "",
-    "wecom_key": "",
-    "push_plus_key": "",
+    # "sc_key": ["XXXX"],
+    # "tg_bot_key": ["XXXX", "XXXXX"],
+    # "bark_key": ["XXXX"],
+    # "wecom_key": ["XXXX", "XXXX", "XXXX"],
+    # "push_plus_key": ["XXXX"],
 }
 
 

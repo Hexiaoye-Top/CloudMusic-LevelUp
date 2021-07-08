@@ -161,8 +161,8 @@ class CloudMusic:
         )
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/84.0.4147.89 "
-            "Safari/537.36",
+                          "Chrome/84.0.4147.89 "
+                          "Safari/537.36",
             "Referer": "http://music.163.com/",
             "Accept-Encoding": "gzip, deflate",
         }
@@ -171,11 +171,11 @@ class CloudMusic:
         login_url = "https://music.163.com/weapi/login/cellphone"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/84.0.4147.89 Safari/537.36",
+                          "Chrome/84.0.4147.89 Safari/537.36",
             "Referer": "http://music.163.com/",
             "Accept-Encoding": "gzip, deflate",
             "Cookie": "os=pc; osver=Microsoft-Windows-10-Professional-build-10586-64bit; appver=2.0.3.131777; "
-            "channel=netease; __remember_me=true;",
+                      "channel=netease; __remember_me=true;",
         }
         res = self.session.post(url=login_url, data=self.login_data, headers=headers)
         ret = json.loads(res.text)
@@ -338,19 +338,19 @@ def run_task(info, phone, password):
         # Push
         push = Push(res_login + "\n\n" + res_sign + "\n\n" + res_m_sign + "\n\n" + res_task)
         # ServerChan
-        if info["sc_key"]:
+        if ("sc_key" in info) and info["sc_key"]:
             push.server_chan_push(info["sc_key"])
         # Bark
-        if info["bark_key"]:
+        if ("bark_key" in info) and info["bark_key"]:
             push.bark_push(info["bark_key"])
         # Telegram
-        if info["tg_bot_key"]:
+        if ("tg_bot_key" in info) and info["tg_bot_key"]:
             push.telegram_push(info["tg_bot_key"])
         # pushplus
-        if info["push_plus_key"]:
+        if ("push_plus_key" in info) and info["push_plus_key"]:
             push.push_plus_push(info["push_plus_key"])
         # 企业微信
-        if info["wecom_key"]:
+        if ("wecom_key" in info) and info["wecom_key"]:
             push.wecom_id_push(info["wecom_key"])
     except Exception as err:
         print(err)
